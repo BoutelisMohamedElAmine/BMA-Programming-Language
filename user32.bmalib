@@ -1,8 +1,0 @@
-BMA_Lib : user32 .
-
-extern_lib : 'user32.dll' .
-
-extern : message_box_a ( hwnd=integer , text=string , caption=string , flags=integer ) return integer from 'MessageBoxA' stdcall .
-extern : message_box_w ( hwnd=integer , text=wstring , caption=wstring , flags=integer ) return integer from 'MessageBoxW' stdcall .
-
-end_lib .

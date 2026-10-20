@@ -1,8 +1,0 @@
-BMA_Lib : windows .
-
-native : message_box ( text=string , caption=string ) return integer .
-native : sleep ( ms=integer ) return void .
-native : beep ( freq=integer , duration=integer ) return void .
-native : get_tick_count () return integer .
-
-end_lib .

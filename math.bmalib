@@ -1,0 +1,23 @@
+BMA_Lib : math .
+
+native : pi () return real .
+native : e () return real .
+native : sqrt ( x=real ) return real .
+native : abs ( x=real ) return real .
+native : sin ( x=real ) return real .
+native : cos ( x=real ) return real .
+native : tan ( x=real ) return real .
+native : pow ( x=real , y=real ) return real .
+native : floor ( x=real ) return integer .
+native : ceil ( x=real ) return integer .
+native : round ( x=real ) return integer .
+native : min ( a=real , b=real ) return real .
+native : max ( a=real , b=real ) return real .
+native : log ( x=real ) return real .
+native : log10 ( x=real ) return real .
+native : exp ( x=real ) return real .
+native : atan2 ( y=real , x=real ) return real .
+native : random () return real .
+native : random_int ( n=integer ) return integer .
+
+end_lib .

@@ -1,0 +1,9 @@
+BMA_Lib : kernel32 .
+
+extern_lib : 'kernel32.dll' .
+
+extern : beep ( freq=integer , duration=integer ) return boolean from 'Beep' stdcall .
+extern : sleep ( ms=integer ) return void from 'Sleep' stdcall .
+extern : get_tick_count () return integer from 'GetTickCount' stdcall .
+
+end_lib .

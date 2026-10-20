@@ -1,9 +1,0 @@
-BMA_Lib : sqlite .
-
-extern_lib : 'sqlite3.dll' .
-
-extern : open ( path=string , db_out=pointer ) return integer from 'sqlite3_open' cdecl .
-extern : close ( db=pointer ) return integer from 'sqlite3_close' cdecl .
-extern : exec ( db=pointer , sql=string , callback=pointer , arg=pointer , errmsg=pointer ) return integer from 'sqlite3_exec' cdecl .
-
-end_lib .

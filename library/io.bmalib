@@ -1,0 +1,9 @@
+BMA_Lib : io .
+
+native : read_file ( path=string ) return string .
+native : write_file ( path=string , content=string ) return void .
+native : append_file ( path=string , content=string ) return void .
+native : file_exists ( path=string ) return boolean .
+native : delete_file ( path=string ) return boolean .
+
+end_lib .

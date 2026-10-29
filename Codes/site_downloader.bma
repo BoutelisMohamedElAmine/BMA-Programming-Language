@@ -1,0 +1,547 @@
+BMA_Pro : site_downloader .
+library : BMA_Web .
+
+/* ═══════════════════════════════════════════════════════════════
+   BMA Site Downloader v10
+   - Fixes _next/image URLs in HTML (images work offline)
+   - Downloads all image formats
+   - Rewrites depth-aware paths
+   ═══════════════════════════════════════════════════════════════ */
+
+variable :
+    index_url = string ,
+    host = string ,
+    scheme = string ,
+    folder_root = string ,
+    MAX_URLS = integer ,
+    MAX_DEPTH = integer ,  
+    queue_url = string[500] ,
+    queue_depth = integer[500] ,
+    q_head = integer ,
+    q_tail = integer ,
+    visited = string[500] ,
+    visited_count = integer ,
+    page_count = integer ,
+    file_count = integer ,
+    fail_count = integer ,
+    skip_count = integer ,
+    current_url = string ,
+    current_depth = integer ,
+    current_html = string ,
+    links = string[500] ,
+    link_count = integer ,
+    i = integer ,
+    j = integer ,
+    rel = string ,
+    full_url = string ,
+    skip = boolean ,
+    e = string ,
+    source_img = string .
+
+/* ─────────── BASIC UTILITIES ─────────── */
+
+function : itoa(n = integer) return string .
+variable : digits = string , r = string , v = integer , d = integer .
+digits = '0123456789' .
+r = '' .
+v = n .
+if v == 0 then return '0' . end_if .
+while v > 0 do
+    d = v mod 10 .
+    r = substring(digits, d, 1) + r .
+    v = v div 10 .
+end_while .
+return r .
+end_func .
+
+function : last_char_pos(s = string , ch = string) return integer .
+variable : k = integer , last = integer .
+last = 0 - 1 .
+k = 0 .
+while k < length(s) do
+    if char_at(s, k) == ch then
+        last = k .
+    end_if .
+    k = k + 1 .
+end_while .
+return last .
+end_func .
+
+function : strip_query(url = string) return string .
+variable : p = integer .
+p = index_of(url, '?') .
+if p >= 0 then
+    return substring(url, 0, p) .
+end_if .
+p = index_of(url, '#') .
+if p >= 0 then
+    return substring(url, 0, p) .
+end_if .
+return url .
+end_func .
+
+/* ─────────── URL CLASSIFICATION ─────────── */
+
+function : get_ext_lower(url = string) return string .
+variable : u = string , base = string , p = integer .
+u = strip_query(url) .
+u = lower(u) .
+p = index_of(u, '://') .
+if p >= 0 then
+    u = substring(u, p + 3, length(u) - p - 3) .
+end_if .
+p = index_of(u, '/') .
+if p < 0 then
+    return '' .
+end_if .
+u = substring(u, p, length(u) - p) .
+p = last_char_pos(u, '/') .
+if p >= 0 then
+    base = substring(u, p + 1, length(u) - p - 1) .
+else
+    base = u .
+end_if .
+p = index_of(base, '.') .
+if p < 0 then return '' . end_if .
+return substring(base, p, length(base) - p) .
+end_func .
+
+function : is_page_url(url = string) return boolean .
+variable : ee = string .
+if contains(url, '_next/image?') then return false . end_if .
+ee = get_ext_lower(url) .
+if ee == '' then return true . end_if .
+if ee == '.html' then return true . end_if .
+if ee == '.htm' then return true . end_if .
+return false .
+end_func .
+
+function : is_skip_url(url = string) return boolean .
+variable : ee = string .
+ee = get_ext_lower(url) .
+if ee == '.webmanifest' then return true . end_if .
+if ee == '.map' then return true . end_if .
+return false .
+end_func .
+
+/* ─────────── PATH RESOLUTION ─────────── */
+
+function : url_to_local(url = string) return string .
+variable : u = string , p = integer , path = string ,
+          result = string , ii = integer , c = string , ee = string .
+u = strip_query(url) .
+p = index_of(u, '://') .
+if p >= 0 then
+    u = substring(u, p + 3, length(u) - p - 3) .
+end_if .
+p = index_of(u, '/') .
+if p >= 0 then
+    path = substring(u, p, length(u) - p) .
+else
+    path = '/index.html' .
+end_if .
+if ends_with(path, '/') then
+    path = path + 'index.html' .
+end_if .
+if is_page_url(url) then
+    ee = get_ext_lower(path) .
+    if ee == '' then
+        path = path + '.html' .
+    end_if .
+end_if .
+result = folder_root .
+ii = 0 .
+while ii < length(path) do
+    c = char_at(path, ii) .
+    if c == '/' then
+        result = result + '\' .
+    else
+        result = result + c .
+    end_if .
+    ii = ii + 1 .
+end_while .
+return result .
+end_func .
+
+function : resolve_url(base_url = string , rel_url = string) return string .
+variable : base_path = string , base_dir = string , p = integer .
+if contains(rel_url, '://') then return rel_url . end_if .
+if starts_with(rel_url, '//') then return scheme + ':' + rel_url . end_if .
+if starts_with(rel_url, '/') then
+    return scheme + '://' + host + rel_url .
+end_if .
+p = index_of(base_url, '://') .
+if p >= 0 then
+    base_path = substring(base_url, p + 3, length(base_url) - p - 3) .
+    p = index_of(base_path, '/') .
+    if p >= 0 then
+        base_path = substring(base_path, p, length(base_path) - p) .
+    else
+        base_path = '/' .
+    end_if .
+else
+    base_path = '/' .
+end_if .
+p = index_of(base_path, '?') .
+if p >= 0 then base_path = substring(base_path, 0, p) . end_if .
+p = last_char_pos(base_path, '/') .
+if p >= 0 then
+    base_dir = substring(base_path, 0, p + 1) .
+else
+    base_dir = '/' .
+end_if .
+return scheme + '://' + host + base_dir + rel_url .
+end_func .
+
+/* ─────────── NEXT.JS IMAGE UNWRAPPING ─────────── */
+
+function : extract_next_source(url = string) return string .
+variable : p = integer , rest = string , q = integer .
+p = index_of(url, 'url=') .
+if p < 0 then return '' . end_if .
+rest = substring(url, p + 4, length(url) - p - 4) .
+q = index_of(rest, '&') .
+if q < 0 then q = length(rest) . end_if .
+rest = substring(rest, 0, q) .
+rest = replace(rest, '%2F', '/') .
+rest = replace(rest, '%2f', '/') .
+rest = replace(rest, '%3A', ':') .
+rest = replace(rest, '%3a', ':') .
+return rest .
+end_func .
+
+/* يحوّل كل _next/image?url=X في HTML إلى X مباشرة */
+function : rewrite_next_images(html = string) return string .
+variable : result = string , rest = string , p = integer , q = integer , url_val = string .
+result = '' .
+rest = html .
+while contains(rest, '/_next/image?url=') do
+    p = index_of(rest, '/_next/image?url=') .
+    result = result + substring(rest, 0, p) .
+    rest = substring(rest, p + 17, length(rest) - p - 17) .
+    q = index_of(rest, '&') .
+    if q < 0 then q = index_of(rest, '"') . end_if .
+    if q < 0 then q = index_of(rest, ' ') . end_if .
+    if q < 0 then q = length(rest) . end_if .
+    url_val = substring(rest, 0, q) .
+    url_val = replace(url_val, '%2F', '/') .
+    url_val = replace(url_val, '%2f', '/') .
+    url_val = replace(url_val, '%3A', ':') .
+    url_val = replace(url_val, '%3a', ':') .
+    result = result + url_val .
+    rest = substring(rest, q, length(rest) - q) .
+end_while .
+result = result + rest .
+return result .
+end_func .
+
+/* ─────────── HTML REWRITING ─────────── */
+
+function : compute_depth_prefix(page_url = string) return string .
+variable : u = string , p = integer , sc = integer , ii = integer , result = string .
+u = strip_query(page_url) .
+p = index_of(u, '://') .
+if p >= 0 then u = substring(u, p + 3, length(u) - p - 3) . end_if .
+p = index_of(u, '/') .
+if p < 0 then return '' . end_if .
+u = substring(u, p, length(u) - p) .
+sc = 0 .
+ii = 0 .
+while ii < length(u) do
+    if char_at(u, ii) == '/' then
+        sc = sc + 1 .
+    end_if .
+    ii = ii + 1 .
+end_while .
+sc = sc - 1 .
+if sc < 0 then sc = 0 . end_if .
+result = '' .
+ii = 0 .
+while ii < sc do
+    result = result + '../' .
+    ii = ii + 1 .
+end_while .
+return result .
+end_func .
+
+function : rewrite_html(html = string , page_url = string) return string .
+variable : result = string , pf = string .
+pf = compute_depth_prefix(page_url) .
+result = rewrite_next_images(html) .
+result = replace(result, 'href="/' , 'href="' + pf) .
+result = replace(result, 'src="/' , 'src="' + pf) .
+return result .
+end_func .
+
+/* ─────────── LINK EXTRACTION ─────────── */
+
+function : extract_attr(html = string , attr = string) return void .
+variable : pat = string , rest = string , p = integer , val = string .
+pat = attr + '="' .
+link_count = 0 .
+rest = html .
+while contains(rest, pat) do
+    if link_count >= 500 then
+        rest = '' .
+    else
+        p = index_of(rest, pat) .
+        rest = substring(rest, p + length(pat), length(rest) - p - length(pat)) .
+        if contains(rest, '"') then
+            val = substring(rest, 0, index_of(rest, '"')) .
+            if length(val) > 0 then
+                links[link_count] = val .
+                link_count = link_count + 1 .
+            end_if .
+            p = index_of(rest, '"') .
+            rest = substring(rest, p + 1, length(rest) - p - 1) .
+        else
+            rest = '' .
+        end_if .
+    end_if .
+end_while .
+return .
+end_func .
+
+/* ─────────── QUEUE ─────────── */
+
+function : is_visited(url = string) return boolean .
+variable : k = integer .
+k = 0 .
+while k < visited_count do
+    if visited[k] == url then return true . end_if .
+    k = k + 1 .
+end_while .
+return false .
+end_func .
+
+function : mark_visited(url = string) return void .
+if visited_count >= 500 then return . end_if .
+visited[visited_count] = url .
+visited_count = visited_count + 1 .
+return .
+end_func .
+
+function : enqueue(u = string , d = integer) return void .
+if q_tail >= MAX_URLS then return . end_if .
+queue_url[q_tail] = u .
+queue_depth[q_tail] = d .
+q_tail = q_tail + 1 .
+return .
+end_func .
+
+/* ─────────── DOWNLOAD ONE ─────────── */
+
+function : download_one(u = string) return void .
+variable : dbody = string , dpath = string , dp = integer .
+if is_visited(u) then return . end_if .
+if is_skip_url(u) then
+    mark_visited(u) .
+    skip_count = skip_count + 1 .
+    return .
+end_if .
+if contains(u, '_next/image?') then
+    mark_visited(u) .
+    source_img = extract_next_source(u) .
+    if length(source_img) > 0 then
+        if starts_with(source_img, '/') then
+            full_url = scheme + '://' + host + source_img .
+        else
+            full_url = resolve_url(u, source_img) .
+        end_if .
+        download_one(full_url) .
+    else
+        skip_count = skip_count + 1 .
+    end_if .
+    return .
+end_if .
+mark_visited(u) .
+dpath = url_to_local(u) .
+dp = last_char_pos(dpath, '\') .
+if dp > 0 then
+    force_dirs(substring(dpath, 0, dp)) .
+end_if .
+if is_page_url(u) then
+    dbody = http_get(u) .
+    if http_is_ok() and length(dbody) > 0 then
+        dbody = rewrite_html(dbody, u) .
+        write_file(dpath, dbody) .
+        page_count = page_count + 1 .
+        writeline('  [page] ' , substring(u, 0, 55)) .
+    else
+        fail_count = fail_count + 1 .
+    end_if .
+else
+    if http_download(u, dpath) then
+        file_count = file_count + 1 .
+        writeline('  [file] ' , substring(u, 0, 55)) .
+    else
+        fail_count = fail_count + 1 .
+    end_if .
+end_if .
+return .
+end_func .
+
+/* ─────────── MAIN ─────────── */
+
+code :
+
+writeline('═══════════════════════════════════════════') .
+writeline('  BMA Site Downloader v10') .
+writeline('═══════════════════════════════════════════') .
+writeline('') .
+writeline('Fixes: _next/image URLs rewritten in HTML') .
+writeline('Images: JPG, PNG, WebP, GIF, SVG, AVIF') .
+writeline('') .
+
+write('URL: ') .
+readLine(index_url) .
+
+if not is_http_url(index_url) then
+    writeline('Error: bad URL') .
+    readLine .
+end_if .
+
+host = get_host(index_url) .
+if is_https_url(index_url) then
+    scheme = 'https' .
+else
+    scheme = 'http' .
+end_if .
+folder_root = 'C:\BMA_Sites\site_' + host .
+
+MAX_URLS = 500 .
+MAX_DEPTH = 3 .
+
+writeline('Host:   ' , host) .
+writeline('Folder: ' , folder_root) .
+writeline('') .
+
+force_dirs(folder_root) .
+if not dir_exists(folder_root) then
+    writeline('ERROR: cannot create folder') .
+    readLine .
+end_if .
+
+q_head = 0 .
+q_tail = 0 .
+visited_count = 0 .
+page_count = 0 .
+file_count = 0 .
+fail_count = 0 .
+skip_count = 0 .
+
+enqueue(index_url, 0) .
+
+writeline('Crawling...') .
+writeline('') .
+
+while q_head < q_tail do
+    if q_head >= MAX_URLS then
+        writeline('  [limit reached]') .
+        q_head = q_tail .
+    else
+        current_url = queue_url[q_head] .
+        current_depth = queue_depth[q_head] .
+        q_head = q_head + 1 .
+
+        if current_depth <= MAX_DEPTH then
+            download_one(current_url) .
+
+            if is_page_url(current_url) then
+                current_html = http_get(current_url) .
+                if http_is_ok() then
+                    extract_attr(current_html, 'href') .
+                    j = 0 .
+                    while j < 500 do
+                        rel = links[j] .
+                        if length(rel) > 0 then
+                            skip = false .
+                            if starts_with(rel, '#') then skip = true . end_if .
+                            if starts_with(rel, 'javascript:') then skip = true . end_if .
+                            if starts_with(rel, 'mailto:') then skip = true . end_if .
+                            if starts_with(rel, 'tel:') then skip = true . end_if .
+                            if starts_with(rel, 'data:') then skip = true . end_if .
+                            if not skip then
+                                full_url = resolve_url(current_url, rel) .
+                                if contains(full_url, host) then
+                                    enqueue(full_url, current_depth + 1) .
+                                end_if .
+                            end_if .
+                        end_if .
+                        j = j + 1 .
+                    end_while .
+
+                    extract_attr(current_html, 'src') .
+                    j = 0 .
+                    while j < 500 do
+                        rel = links[j] .
+                        if length(rel) > 0 then
+                            skip = false .
+                            if starts_with(rel, '#') then skip = true . end_if .
+                            if starts_with(rel, 'javascript:') then skip = true . end_if .
+                            if starts_with(rel, 'data:') then skip = true . end_if .
+                            if not skip then
+                                full_url = resolve_url(current_url, rel) .
+                                if contains(full_url, host) then
+                                    enqueue(full_url, current_depth + 1) .
+                                end_if .
+                            end_if .
+                        end_if .
+                        j = j + 1 .
+                    end_while .
+
+                    extract_attr(current_html, 'srcset') .
+                    j = 0 .
+                    while j < 500 do
+                        rel = links[j] .
+                        if length(rel) > 0 then
+                            if not starts_with(rel, 'data:') then
+                                full_url = resolve_url(current_url, rel) .
+                                if contains(full_url, host) then
+                                    enqueue(full_url, current_depth + 1) .
+                                end_if .
+                            end_if .
+                        end_if .
+                        j = j + 1 .
+                    end_while .
+
+                    extract_attr(current_html, 'data-src') .
+                    j = 0 .
+                    while j < 500 do
+                        rel = links[j] .
+                        if length(rel) > 0 then
+                            if not starts_with(rel, 'data:') then
+                                full_url = resolve_url(current_url, rel) .
+                                if contains(full_url, host) then
+                                    enqueue(full_url, current_depth + 1) .
+                                end_if .
+                            end_if .
+                        end_if .
+                        j = j + 1 .
+                    end_while .
+                end_if .
+            end_if .
+        end_if .
+    end_if .
+end_while .
+
+writeline('') .
+writeline('═══════════════════════════════════════════') .
+writeline('  Pages:     ' , page_count) .
+writeline('  Files:     ' , file_count) .
+writeline('  Failed:    ' , fail_count) .
+writeline('  Skipped:   ' , skip_count) .
+writeline('  Visited:   ' , visited_count) .
+writeline('') .
+writeline('  Folder: ' , folder_root) .
+writeline('') .
+writeline('NOTE about Next.js (React):') .
+writeline('  - Images now work offline') .
+writeline('  - CSS/JS need a server (not file://)') .
+writeline('  - Blank page = Next.js needs its backend') .
+writeline('  - For static sites (WordPress, blogs, docs),') .
+writeline('    everything works with file://') .
+writeline('═══════════════════════════════════════════') .
+readLine .
+
+end .

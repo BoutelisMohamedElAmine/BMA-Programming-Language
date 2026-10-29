@@ -1,0 +1,863 @@
+
+BMA_Lib : BMA_Date .
+
+function : is_leap_year(year = integer) return boolean .
+    if (year mod 400) == 0 then
+        return true .
+    end_if .
+    if (year mod 100) == 0 then
+        return false .
+    end_if .
+    if (year mod 4) == 0 then
+        return true .
+    end_if .
+    return false .
+end_func .
+
+function : days_in_month(month = integer, year = integer) return integer .
+    if month == 1 then
+        return 31 .
+    end_if .
+    if month == 2 then
+        if is_leap_year(year) then
+            return 29 .
+        end_if .
+        return 28 .
+    end_if .
+    if month == 3 then
+        return 31 .
+    end_if .
+    if month == 4 then
+        return 30 .
+    end_if .
+    if month == 5 then
+        return 31 .
+    end_if .
+    if month == 6 then
+        return 30 .
+    end_if .
+    if month == 7 then
+        return 31 .
+    end_if .
+    if month == 8 then
+        return 31 .
+    end_if .
+    if month == 9 then
+        return 30 .
+    end_if .
+    if month == 10 then
+        return 31 .
+    end_if .
+    if month == 11 then
+        return 30 .
+    end_if .
+    if month == 12 then
+        return 31 .
+    end_if .
+    return 0 .
+end_func .
+
+function : is_valid_date(day = integer, month = integer, year = integer) return boolean .
+    if year < 1 then
+        return false .
+    end_if .
+    if month < 1 then
+        return false .
+    end_if .
+    if month > 12 then
+        return false .
+    end_if .
+    if day < 1 then
+        return false .
+    end_if .
+    if day > days_in_month(month, year) then
+        return false .
+    end_if .
+    return true .
+end_func .
+
+function : is_valid_time(hour = integer, minute = integer, second = integer) return boolean .
+    if hour < 0 then
+        return false .
+    end_if .
+    if hour > 23 then
+        return false .
+    end_if .
+    if minute < 0 then
+        return false .
+    end_if .
+    if minute > 59 then
+        return false .
+    end_if .
+    if second < 0 then
+        return false .
+    end_if .
+    if second > 59 then
+        return false .
+    end_if .
+    return true .
+end_func .
+
+function : is_valid_datetime(day = integer, month = integer, year = integer, hour = integer, minute = integer, second = integer) return boolean .
+    if not is_valid_date(day, month, year) then
+        return false .
+    end_if .
+    if not is_valid_time(hour, minute, second) then
+        return false .
+    end_if .
+    return true .
+end_func .
+
+function : is_january(month = integer) return boolean .
+    return month == 1 .
+end_func .
+
+function : is_february(month = integer) return boolean .
+    return month == 2 .
+end_func .
+
+function : is_march(month = integer) return boolean .
+    return month == 3 .
+end_func .
+
+function : is_april(month = integer) return boolean .
+    return month == 4 .
+end_func .
+
+function : is_may(month = integer) return boolean .
+    return month == 5 .
+end_func .
+
+function : is_june(month = integer) return boolean .
+    return month == 6 .
+end_func .
+
+function : is_july(month = integer) return boolean .
+    return month == 7 .
+end_func .
+
+function : is_august(month = integer) return boolean .
+    return month == 8 .
+end_func .
+
+function : is_september(month = integer) return boolean .
+    return month == 9 .
+end_func .
+
+function : is_october(month = integer) return boolean .
+    return month == 10 .
+end_func .
+
+function : is_november(month = integer) return boolean .
+    return month == 11 .
+end_func .
+
+function : is_december(month = integer) return boolean .
+    return month == 12 .
+end_func .
+
+function : is_weekend_day(day_of_week = integer) return boolean .
+    if day_of_week == 6 then
+        return true .
+    end_if .
+    if day_of_week == 7 then
+        return true .
+    end_if .
+    return false .
+end_func .
+
+function : is_weekday(day_of_week = integer) return boolean .
+    if day_of_week < 1 then
+        return false .
+    end_if .
+    if day_of_week > 7 then
+        return false .
+    end_if .
+    if is_weekend_day(day_of_week) then
+        return false .
+    end_if .
+    return true .
+end_func .
+
+function : compare_dates(day1 = integer, month1 = integer, year1 = integer, day2 = integer, month2 = integer, year2 = integer) return integer .
+    if year1 < year2 then
+        return -1 .
+    end_if .
+    if year1 > year2 then
+        return 1 .
+    end_if .
+    if month1 < month2 then
+        return -1 .
+    end_if .
+    if month1 > month2 then
+        return 1 .
+    end_if .
+    if day1 < day2 then
+        return -1 .
+    end_if .
+    if day1 > day2 then
+        return 1 .
+    end_if .
+    return 0 .
+end_func .
+
+function : compare_times(hour1 = integer, minute1 = integer, second1 = integer, hour2 = integer, minute2 = integer, second2 = integer) return integer .
+    if hour1 < hour2 then
+        return -1 .
+    end_if .
+    if hour1 > hour2 then
+        return 1 .
+    end_if .
+    if minute1 < minute2 then
+        return -1 .
+    end_if .
+    if minute1 > minute2 then
+        return 1 .
+    end_if .
+    if second1 < second2 then
+        return -1 .
+    end_if .
+    if second1 > second2 then
+        return 1 .
+    end_if .
+    return 0 .
+end_func .
+
+function : days_in_year(year = integer) return integer .
+    if is_leap_year(year) then
+        return 366 .
+    end_if .
+    return 365 .
+end_func .
+
+function : day_of_year(day = integer, month = integer, year = integer) return integer .
+    variable : total = integer , current_month = integer .
+    if not is_valid_date(day, month, year) then
+        return 0 .
+    end_if .
+    total = day .
+    current_month = 1 .
+    while current_month < month do
+        total = total + days_in_month(current_month, year) .
+        current_month = current_month + 1 .
+    end_while .
+    return total .
+end_func .
+
+function : days_before_year(year = integer) return integer .
+    variable : previous_year = integer .
+    if year < 1 then
+        return 0 .
+    end_if .
+    previous_year = year - 1 .
+    return previous_year * 365 + previous_year div 4 - previous_year div 100 + previous_year div 400 .
+end_func .
+
+function : date_to_day_number(day = integer, month = integer, year = integer) return integer .
+    if not is_valid_date(day, month, year) then
+        return -1 .
+    end_if .
+    return days_before_year(year) + day_of_year(day, month, year) - 1 .
+end_func .
+
+function : days_between_dates(day1 = integer, month1 = integer, year1 = integer, day2 = integer, month2 = integer, year2 = integer) return integer .
+    variable : first_number = integer , second_number = integer .
+    first_number = date_to_day_number(day1, month1, year1) .
+    second_number = date_to_day_number(day2, month2, year2) .
+    if first_number < 0 then
+        return -1 .
+    end_if .
+    if second_number < 0 then
+        return -1 .
+    end_if .
+    return second_number - first_number .
+end_func .
+
+function : absolute_days_between(day1 = integer, month1 = integer, year1 = integer, day2 = integer, month2 = integer, year2 = integer) return integer .
+    variable : difference = integer .
+    difference = days_between_dates(day1, month1, year1, day2, month2, year2) .
+    if difference < 0 then
+        if difference == -1 then
+            return -1 .
+        end_if .
+        return 0 - difference .
+    end_if .
+    return difference .
+end_func .
+
+function : add_days(day = integer, month = integer, year = integer, amount = integer) return integer .
+    variable : current_day = integer , current_month = integer , current_year = integer , remaining = integer .
+    if not is_valid_date(day, month, year) then
+        return -1 .
+    end_if .
+    current_day = day .
+    current_month = month .
+    current_year = year .
+    remaining = amount .
+    while remaining > 0 do
+        current_day = current_day + 1 .
+        if current_day > days_in_month(current_month, current_year) then
+            current_day = 1 .
+            current_month = current_month + 1 .
+            if current_month > 12 then
+                current_month = 1 .
+                current_year = current_year + 1 .
+            end_if .
+        end_if .
+        remaining = remaining - 1 .
+    end_while .
+    while remaining < 0 do
+        current_day = current_day - 1 .
+        if current_day < 1 then
+            current_month = current_month - 1 .
+            if current_month < 1 then
+                current_month = 12 .
+                current_year = current_year - 1 .
+            end_if .
+            if current_year < 1 then
+                return -1 .
+            end_if .
+            current_day = days_in_month(current_month, current_year) .
+        end_if .
+        remaining = remaining + 1 .
+    end_while .
+    return date_to_day_number(current_day, current_month, current_year) .
+end_func .
+
+function : add_months_day(day = integer, month = integer, year = integer, amount = integer) return integer .
+    variable : total_month = integer , target_month = integer , target_year = integer , target_day = integer .
+    if not is_valid_date(day, month, year) then
+        return -1 .
+    end_if .
+    total_month = (year - 1) * 12 + month - 1 + amount .
+    if total_month < 0 then
+        return -1 .
+    end_if .
+    target_year = total_month div 12 + 1 .
+    target_month = total_month mod 12 + 1 .
+    target_day = day .
+    if target_day > days_in_month(target_month, target_year) then
+        target_day = days_in_month(target_month, target_year) .
+    end_if .
+    return date_to_day_number(target_day, target_month, target_year) .
+end_func .
+
+function : seconds_since_midnight(hour = integer, minute = integer, second = integer) return integer .
+    if not is_valid_time(hour, minute, second) then
+        return -1 .
+    end_if .
+    return hour * 3600 + minute * 60 + second .
+end_func .
+
+function : time_difference_seconds(hour1 = integer, minute1 = integer, second1 = integer, hour2 = integer, minute2 = integer, second2 = integer) return integer .
+    variable : first_seconds = integer , second_seconds = integer .
+    first_seconds = seconds_since_midnight(hour1, minute1, second1) .
+    second_seconds = seconds_since_midnight(hour2, minute2, second2) .
+    if first_seconds < 0 then
+        return -1 .
+    end_if .
+    if second_seconds < 0 then
+        return -1 .
+    end_if .
+    return second_seconds - first_seconds .
+end_func .
+
+function : absolute_time_difference_seconds(hour1 = integer, minute1 = integer, second1 = integer, hour2 = integer, minute2 = integer, second2 = integer) return integer .
+    variable : difference = integer .
+    difference = time_difference_seconds(hour1, minute1, second1, hour2, minute2, second2) .
+    if difference < 0 then
+        return 0 - difference .
+    end_if .
+    return difference .
+end_func .
+
+function : seconds_to_hours(seconds = integer) return integer .
+    if seconds < 0 then
+        return -1 .
+    end_if .
+    return seconds div 3600 .
+end_func .
+
+function : seconds_to_minutes(seconds = integer) return integer .
+    if seconds < 0 then
+        return -1 .
+    end_if .
+    return seconds div 60 .
+end_func .
+
+function : minutes_to_hours(minutes = integer) return integer .
+    if minutes < 0 then
+        return -1 .
+    end_if .
+    return minutes div 60 .
+end_func .
+
+function : seconds_remainder_minute(seconds = integer) return integer .
+    if seconds < 0 then
+        return -1 .
+    end_if .
+    return seconds mod 60 .
+end_func .
+
+function : minutes_remainder_hour(minutes = integer) return integer .
+    if minutes < 0 then
+        return -1 .
+    end_if .
+    return minutes mod 60 .
+end_func .
+
+function : hour_from_seconds(seconds = integer) return integer .
+    if seconds < 0 then
+        return -1 .
+    end_if .
+    return (seconds div 3600) mod 24 .
+end_func .
+
+function : minute_from_seconds(seconds = integer) return integer .
+    if seconds < 0 then
+        return -1 .
+    end_if .
+    return (seconds div 60) mod 60 .
+end_func .
+
+function : second_from_seconds(seconds = integer) return integer .
+    if seconds < 0 then
+        return -1 .
+    end_if .
+    return seconds mod 60 .
+end_func .
+
+function : is_am(hour = integer) return boolean .
+    if hour < 0 then
+        return false .
+    end_if .
+    if hour > 23 then
+        return false .
+    end_if .
+    return hour < 12 .
+end_func .
+
+function : is_pm(hour = integer) return boolean .
+    if hour < 0 then
+        return false .
+    end_if .
+    if hour > 23 then
+        return false .
+    end_if .
+    return hour >= 12 .
+end_func .
+
+function : to_12_hour(hour = integer) return integer .
+    if hour < 0 then
+        return -1 .
+    end_if .
+    if hour > 23 then
+        return -1 .
+    end_if .
+    if hour == 0 then
+        return 12 .
+    end_if .
+    if hour > 12 then
+        return hour - 12 .
+    end_if .
+    return hour .
+end_func .
+
+function : is_midnight(hour = integer, minute = integer, second = integer) return boolean .
+    if not is_valid_time(hour, minute, second) then
+        return false .
+    end_if .
+    return (hour == 0) and (minute == 0) and (second == 0) .
+end_func .
+
+function : is_noon(hour = integer, minute = integer, second = integer) return boolean .
+    if not is_valid_time(hour, minute, second) then
+        return false .
+    end_if .
+    return (hour == 12) and (minute == 0) and (second == 0) .
+end_func .
+
+function : is_same_date(day1 = integer, month1 = integer, year1 = integer, day2 = integer, month2 = integer, year2 = integer) return boolean .
+    return (day1 == day2) and (month1 == month2) and (year1 == year2) .
+end_func .
+
+function : is_same_time(hour1 = integer, minute1 = integer, second1 = integer, hour2 = integer, minute2 = integer, second2 = integer) return boolean .
+    return (hour1 == hour2) and (minute1 == minute2) and (second1 == second2) .
+end_func .
+
+function : is_date_before(day1 = integer, month1 = integer, year1 = integer, day2 = integer, month2 = integer, year2 = integer) return boolean .
+    return compare_dates(day1, month1, year1, day2, month2, year2) == -1 .
+end_func .
+
+function : is_date_after(day1 = integer, month1 = integer, year1 = integer, day2 = integer, month2 = integer, year2 = integer) return boolean .
+    return compare_dates(day1, month1, year1, day2, month2, year2) == 1 .
+end_func .
+
+function : is_time_before(hour1 = integer, minute1 = integer, second1 = integer, hour2 = integer, minute2 = integer, second2 = integer) return boolean .
+    return compare_times(hour1, minute1, second1, hour2, minute2, second2) == -1 .
+end_func .
+
+function : is_time_after(hour1 = integer, minute1 = integer, second1 = integer, hour2 = integer, minute2 = integer, second2 = integer) return boolean .
+    return compare_times(hour1, minute1, second1, hour2, minute2, second2) == 1 .
+end_func .
+
+function : month_name(month = integer) return string .
+    if month == 1 then
+        return 'January' .
+    end_if .
+    if month == 2 then
+        return 'February' .
+    end_if .
+    if month == 3 then
+        return 'March' .
+    end_if .
+    if month == 4 then
+        return 'April' .
+    end_if .
+    if month == 5 then
+        return 'May' .
+    end_if .
+    if month == 6 then
+        return 'June' .
+    end_if .
+    if month == 7 then
+        return 'July' .
+    end_if .
+    if month == 8 then
+        return 'August' .
+    end_if .
+    if month == 9 then
+        return 'September' .
+    end_if .
+    if month == 10 then
+        return 'October' .
+    end_if .
+    if month == 11 then
+        return 'November' .
+    end_if .
+    if month == 12 then
+        return 'December' .
+    end_if .
+    return 'Invalid month' .
+end_func .
+
+function : month_name_fr(month = integer) return string .
+    if month == 1 then
+        return 'Janvier' .
+    end_if .
+    if month == 2 then
+        return 'Fevrier' .
+    end_if .
+    if month == 3 then
+        return 'Mars' .
+    end_if .
+    if month == 4 then
+        return 'Avril' .
+    end_if .
+    if month == 5 then
+        return 'Mai' .
+    end_if .
+    if month == 6 then
+        return 'Juin' .
+    end_if .
+    if month == 7 then
+        return 'Juillet' .
+    end_if .
+    if month == 8 then
+        return 'Aout' .
+    end_if .
+    if month == 9 then
+        return 'Septembre' .
+    end_if .
+    if month == 10 then
+        return 'Octobre' .
+    end_if .
+    if month == 11 then
+        return 'Novembre' .
+    end_if .
+    if month == 12 then
+        return 'Decembre' .
+    end_if .
+    return 'Mois invalide' .
+end_func .
+
+function : month_name_ar(month = integer) return string .
+    if month == 1 then
+        return 'يناير' .
+    end_if .
+    if month == 2 then
+        return 'فبراير' .
+    end_if .
+    if month == 3 then
+        return 'مارس' .
+    end_if .
+    if month == 4 then
+        return 'أبريل' .
+    end_if .
+    if month == 5 then
+        return 'ماي' .
+    end_if .
+    if month == 6 then
+        return 'جوان' .
+    end_if .
+    if month == 7 then
+        return 'جويلية' .
+    end_if .
+    if month == 8 then
+        return 'أوت' .
+    end_if .
+    if month == 9 then
+        return 'سبتمبر' .
+    end_if .
+    if month == 10 then
+        return 'أكتوبر' .
+    end_if .
+    if month == 11 then
+        return 'نوفمبر' .
+    end_if .
+    if month == 12 then
+        return 'ديسمبر' .
+    end_if .
+    return 'شهر غير صالح' .
+end_func .
+
+function : day_name_en(day_of_week = integer) return string .
+    if day_of_week == 1 then
+        return 'Monday' .
+    end_if .
+    if day_of_week == 2 then
+        return 'Tuesday' .
+    end_if .
+    if day_of_week == 3 then
+        return 'Wednesday' .
+    end_if .
+    if day_of_week == 4 then
+        return 'Thursday' .
+    end_if .
+    if day_of_week == 5 then
+        return 'Friday' .
+    end_if .
+    if day_of_week == 6 then
+        return 'Saturday' .
+    end_if .
+    if day_of_week == 7 then
+        return 'Sunday' .
+    end_if .
+    return 'Invalid day' .
+end_func .
+
+function : day_name_fr(day_of_week = integer) return string .
+    if day_of_week == 1 then
+        return 'Lundi' .
+    end_if .
+    if day_of_week == 2 then
+        return 'Mardi' .
+    end_if .
+    if day_of_week == 3 then
+        return 'Mercredi' .
+    end_if .
+    if day_of_week == 4 then
+        return 'Jeudi' .
+    end_if .
+    if day_of_week == 5 then
+        return 'Vendredi' .
+    end_if .
+    if day_of_week == 6 then
+        return 'Samedi' .
+    end_if .
+    if day_of_week == 7 then
+        return 'Dimanche' .
+    end_if .
+    return 'Jour invalide' .
+end_func .
+
+function : day_name_ar(day_of_week = integer) return string .
+    if day_of_week == 1 then
+        return 'الإثنين' .
+    end_if .
+    if day_of_week == 2 then
+        return 'الثلاثاء' .
+    end_if .
+    if day_of_week == 3 then
+        return 'الأربعاء' .
+    end_if .
+    if day_of_week == 4 then
+        return 'الخميس' .
+    end_if .
+    if day_of_week == 5 then
+        return 'الجمعة' .
+    end_if .
+    if day_of_week == 6 then
+        return 'السبت' .
+    end_if .
+    if day_of_week == 7 then
+        return 'الأحد' .
+    end_if .
+    return 'يوم غير صالح' .
+end_func .
+
+function : weekday_number(day = integer, month = integer, year = integer) return integer .
+    variable : number = integer , remainder = integer .
+    number = date_to_day_number(day, month, year) .
+    if number < 0 then
+        return 0 .
+    end_if .
+    remainder = (number + 1) mod 7 .
+    if remainder == 0 then
+        return 7 .
+    end_if .
+    return remainder .
+end_func .
+
+function : date_is_in_range(day = integer, month = integer, year = integer, start_day = integer, start_month = integer, start_year = integer, end_day = integer, end_month = integer, end_year = integer) return boolean .
+    if not is_valid_date(day, month, year) then
+        return false .
+    end_if .
+    if not is_valid_date(start_day, start_month, start_year) then
+        return false .
+    end_if .
+    if not is_valid_date(end_day, end_month, end_year) then
+        return false .
+    end_if .
+    if compare_dates(start_day, start_month, start_year, end_day, end_month, end_year) == 1 then
+        return false .
+    end_if .
+    if compare_dates(day, month, year, start_day, start_month, start_year) == -1 then
+        return false .
+    end_if .
+    if compare_dates(day, month, year, end_day, end_month, end_year) == 1 then
+        return false .
+    end_if .
+    return true .
+end_func .
+
+function : quarter_of_year(month = integer) return integer .
+    if month < 1 then
+        return 0 .
+    end_if .
+    if month > 12 then
+        return 0 .
+    end_if .
+    return (month - 1) div 3 + 1 .
+end_func .
+
+function : first_day_of_quarter(month = integer) return integer .
+    if month < 1 then
+        return 0 .
+    end_if .
+    if month > 12 then
+        return 0 .
+    end_if .
+    return ((month - 1) div 3) * 3 + 1 .
+end_func .
+
+function : last_day_of_quarter(month = integer, year = integer) return integer .
+    variable : last_month = integer .
+    if month < 1 then
+        return 0 .
+    end_if .
+    if month > 12 then
+        return 0 .
+    end_if .
+    last_month = first_day_of_quarter(month) + 2 .
+    return days_in_month(last_month, year) .
+end_func .
+
+function : is_first_day_of_month(day = integer) return boolean .
+    return day == 1 .
+end_func .
+
+function : is_last_day_of_month(day = integer, month = integer, year = integer) return boolean .
+    if not is_valid_date(day, month, year) then
+        return false .
+    end_if .
+    return day == days_in_month(month, year) .
+end_func .
+
+function : is_first_month_of_year(month = integer) return boolean .
+    return month == 1 .
+end_func .
+
+function : is_last_month_of_year(month = integer) return boolean .
+    return month == 12 .
+end_func .
+
+
+function : date_to_iso_string(day = integer, month = integer, year = integer) return string .
+    if not is_valid_date(day, month, year) then
+        return 'Invalid date' .
+    end_if .
+    return 'Valid date' .
+end_func .
+
+function : time_to_string(hour = integer, minute = integer, second = integer) return string .
+    if not is_valid_time(hour, minute, second) then
+        return 'Invalid time' .
+    end_if .
+    return 'Valid time' .
+end_func .
+
+function : date_time_to_string(day = integer, month = integer, year = integer, hour = integer, minute = integer, second = integer) return string .
+    if not is_valid_datetime(day, month, year, hour, minute, second) then
+        return 'Invalid date time' .
+    end_if .
+    return 'Valid date time' .
+end_func .
+
+
+function : age_in_years(birth_day = integer, birth_month = integer, birth_year = integer, current_day = integer, current_month = integer, current_year = integer) return integer .
+    variable : age = integer .
+    if not is_valid_date(birth_day, birth_month, birth_year) then
+        return -1 .
+    end_if .
+    if not is_valid_date(current_day, current_month, current_year) then
+        return -1 .
+    end_if .
+    if compare_dates(birth_day, birth_month, birth_year, current_day, current_month, current_year) == 1 then
+        return -1 .
+    end_if .
+    age = current_year - birth_year .
+    if current_month < birth_month then
+        age = age - 1 .
+    else
+        if current_month == birth_month then
+            if current_day < birth_day then
+                age = age - 1 .
+            end_if .
+        end_if .
+    end_if .
+    return age .
+end_func .
+
+function : days_until_date(day = integer, month = integer, year = integer, target_day = integer, target_month = integer, target_year = integer) return integer .
+    return days_between_dates(day, month, year, target_day, target_month, target_year) .
+end_func .
+
+function : is_leap_day(day = integer, month = integer, year = integer) return boolean .
+    if not is_valid_date(day, month, year) then
+        return false .
+    end_if .
+    return (day == 29) and (month == 2) .
+end_func .
+
+function : is_valid_year_month(year = integer, month = integer) return boolean .
+    if year < 1 then
+        return false .
+    end_if .
+    if month < 1 then
+        return false .
+    end_if .
+    if month > 12 then
+        return false .
+    end_if .
+    return true .
+end_func .
+
+function : days_in_month_safe(month = integer, year = integer) return integer .
+    if not is_valid_year_month(year, month) then
+        return 0 .
+    end_if .
+    return days_in_month(month, year) .
+end_func .
+
+end_lib .

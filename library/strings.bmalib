@@ -53,6 +53,30 @@ function : is_palindrome ( s=string ) return boolean .
             return true .
 end_func .
 
+//---------------int to str --------------------
+
+function : int_to_str(n = integer) return string .
+variable : digits = string , result = string , val = integer , dg = integer .
+digits = '0123456789' .
+result = '' .
+val = n .
+if val < 0 then
+    return '-' + int_to_str(0 - val) .
+end_if .
+if val == 0 then
+    return '0' .
+end_if .
+while val > 0 do
+    dg = val mod 10 .
+    result = substring(digits, dg, 1) + result .
+    val = val div 10 .
+end_while .
+return result .
+end_func .
+
+//------------------------------------------------------------
+
+
 function : inttostr ( n=integer ) return string .
             variable : result=string , digit=integer , negative=boolean .
             result = '' .

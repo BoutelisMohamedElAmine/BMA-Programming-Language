@@ -1,0 +1,716 @@
+BMA_Lib : BMA_Web .
+
+/*{ ═══════════════════════════════════════════════════════════════
+  BMA_Web 2.0 — Legendary Edition
+  Complete HTTP + JSON + Files + Strings + URL + HTML toolkit
+  ~50 natives, ~70 BMA functions
+  ═══════════════════════════════════════════════════════════════
+  Note: If library fails with "no implementation exists",
+  remove that single native line — everything else will work.
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+//{ ─────────── HTTP Natives ─────────── }
+native : http_get(url = string) return string .
+native : http_post(url = string, body = string) return string .
+native : http_put(url = string, body = string) return string .
+native : http_delete(url = string) return string .
+native : http_download(url = string, path = string) return boolean .
+
+native : http_last_status() return integer .
+native : http_last_error() return string .
+native : http_add_header(name = string, value = string) return void .
+native : http_clear_headers() return void .
+native : http_set_timeout(ms = integer) return void .
+
+//{ ─────────── URL Natives ─────────── }
+native : url_encode(s = string) return string .
+native : url_decode(s = string) return string .
+native : resolve_url(base = string, rel = string) return string .
+
+//{ ─────────── JSON Natives ─────────── }
+native : json_valid(s = string) return boolean .
+native : json_has(s = string, path = string) return boolean .
+native : json_get(s = string, path = string) return string .
+native : json_get_int(s = string, path = string) return integer .
+native : json_get_real(s = string, path = string) return real .
+native : json_get_bool(s = string, path = string) return boolean .
+
+//{ ─────────── String Natives ─────────── }
+native : lower(s = string) return string .
+native : upper(s = string) return string .
+native : trim(s = string) return string .
+native : length(s = string) return integer .
+native : contains(s = string, sub = string) return boolean .
+native : starts_with(s = string, prefix = string) return boolean .
+native : ends_with(s = string, suffix = string) return boolean .
+native : index_of(s = string, sub = string) return integer .
+native : substring(s = string, start = integer, count = integer) return string .
+native : replace(s = string, old = string, new = string) return string .
+native : reverse(s = string) return string .
+native : char_at(s = string, index = integer) return string .
+native : repeat_str(s = string, n = integer) return string .
+native : extract_between(text = string, start = string, end_tag = string) return array_string .
+
+//{ ─────────── File Natives ─────────── }
+native : read_file(path = string) return string .
+native : write_file(path = string, content = string) return void .
+native : append_file(path = string, content = string) return void .
+native : file_exists(path = string) return boolean .
+native : delete_file(path = string) return void .
+native : file_size(path = string) return integer .
+native : read_binary(path = string) return string .
+native : write_binary(path = string, base64 = string) return boolean .
+native : append_binary(path = string, base64 = string) return boolean .
+
+//{ ─────────── Folder Natives ─────────── }
+native : force_dirs(path = string) return boolean .
+native : make_dir(path = string) return boolean .
+native : dir_exists(path = string) return boolean .
+
+//{ ─────────── Text Utilities ─────────── }
+native : newline() return string .
+native : tab() return string .
+native : split(s = string, sep = string) return array_string .
+native : join(arr = array_string, sep = string) return string .
+
+//{ ─────────── Time Natives ─────────── }
+native : sleep(ms = integer) return void .
+native : get_tick_count() return integer .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  INTERNAL HELPERS — used by many functions below
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : last_index_of_char(u = string, ch = string) return integer .
+variable : i = integer , last = integer .
+last = 0 - 1 .
+i = 0 .
+while i < length(u) do
+    if char_at(u, i) == ch then
+        last = i .
+    end_if .
+    i = i + 1 .
+end_while .
+return last .
+end_func .
+
+/*function : int_to_str(n = integer) return string .
+variable : digits = string , result = string , val = integer , dg = integer .
+digits = '0123456789' .
+result = '' .
+val = n .
+if val == 0 then return '0' . end_if .
+if val < 0 then
+    return '-' + int_to_str(0 - val) .
+end_if .
+while val > 0 do
+    dg = val mod 10 .
+    result = substring(digits, dg, 1) + result .
+    val = val div 10 .
+end_while .
+return result .
+end_func . */
+
+function : char_digit(c = string) return integer .
+if c == '0' then return 0 . end_if .
+if c == '1' then return 1 . end_if .
+if c == '2' then return 2 . end_if .
+if c == '3' then return 3 . end_if .
+if c == '4' then return 4 . end_if .
+if c == '5' then return 5 . end_if .
+if c == '6' then return 6 . end_if .
+if c == '7' then return 7 . end_if .
+if c == '8' then return 8 . end_if .
+if c == '9' then return 9 . end_if .
+return 0 - 1 .
+end_func .
+
+function : is_all_digits(s = string) return boolean .
+variable : i = integer , c = string .
+if length(s) == 0 then return false . end_if .
+i = 0 .
+while i < length(s) do
+    c = char_at(s, i) .
+    if c < '0' then return false . end_if .
+    if c > '9' then return false . end_if .
+    i = i + 1 .
+end_while .
+return true .
+end_func .
+
+function : str_to_int(s = string) return integer .
+variable : val = integer , i = integer , c = string , neg = boolean , d = integer .
+if length(s) == 0 then return 0 . end_if .
+val = 0 .
+i = 0 .
+neg = false .
+if char_at(s, 0) == '-' then
+    neg = true .
+    i = 1 .
+end_if .
+while i < length(s) do
+    c = char_at(s, i) .
+    d = char_digit(c) .
+    if d < 0 then return 0 . end_if .
+    val = val * 10 + d .
+    i = i + 1 .
+end_while .
+if neg then return 0 - val . end_if .
+return val .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  HTTP HELPERS
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : http_is_ok() return boolean .
+variable : s = integer .
+s = http_last_status() .
+if s >= 200 then
+    if s < 300 then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : http_is_redirect() return boolean .
+variable : s = integer .
+s = http_last_status() .
+if s >= 300 then
+    if s < 400 then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : http_is_client_error() return boolean .
+variable : s = integer .
+s = http_last_status() .
+if s >= 400 then
+    if s < 500 then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : http_is_server_error() return boolean .
+variable : s = integer .
+s = http_last_status() .
+if s >= 500 then
+    if s < 600 then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : http_is_success() return boolean .
+return http_is_ok() .
+end_func .
+
+function : http_status_text() return string .
+variable : s = integer .
+s = http_last_status() .
+if s == 0 then return 'Network Error: ' + http_last_error() . end_if .
+if s == 200 then return '200 OK' . end_if .
+if s == 201 then return '201 Created' . end_if .
+if s == 202 then return '202 Accepted' . end_if .
+if s == 204 then return '204 No Content' . end_if .
+if s == 301 then return '301 Moved Permanently' . end_if .
+if s == 302 then return '302 Found' . end_if .
+if s == 303 then return '303 See Other' . end_if .
+if s == 304 then return '304 Not Modified' . end_if .
+if s == 307 then return '307 Temporary Redirect' . end_if .
+if s == 308 then return '308 Permanent Redirect' . end_if .
+if s == 400 then return '400 Bad Request' . end_if .
+if s == 401 then return '401 Unauthorized' . end_if .
+if s == 403 then return '403 Forbidden' . end_if .
+if s == 404 then return '404 Not Found' . end_if .
+if s == 405 then return '405 Method Not Allowed' . end_if .
+if s == 408 then return '408 Request Timeout' . end_if .
+if s == 409 then return '409 Conflict' . end_if .
+if s == 410 then return '410 Gone' . end_if .
+if s == 422 then return '422 Unprocessable Entity' . end_if .
+if s == 429 then return '429 Too Many Requests' . end_if .
+if s == 500 then return '500 Internal Server Error' . end_if .
+if s == 501 then return '501 Not Implemented' . end_if .
+if s == 502 then return '502 Bad Gateway' . end_if .
+if s == 503 then return '503 Service Unavailable' . end_if .
+if s == 504 then return '504 Gateway Timeout' . end_if .
+return 'HTTP Error' .
+end_func .
+
+function : http_post_json(url = string, body = string) return string .
+return http_post(url, body) .
+end_func .
+
+function : http_put_json(url = string, body = string) return string .
+return http_put(url, body) .
+end_func .
+
+function : http_get_retry(url = string, retries = integer) return string .
+variable : i = integer , body = string .
+i = 0 .
+body = '' .
+while i <= retries do
+    body = http_get(url) .
+    if http_is_ok() then return body . end_if .
+    i = i + 1 .
+    if i <= retries then sleep(500) . end_if .
+end_while .
+return body .
+end_func .
+
+function : http_download_retry(url = string, path = string, retries = integer) return boolean .
+variable : i = integer .
+i = 0 .
+while i <= retries do
+    if http_download(url, path) then return true . end_if .
+    i = i + 1 .
+    if i <= retries then sleep(500) . end_if .
+end_while .
+return false .
+end_func .
+
+function : http_set_user_agent(ua = string) return void .
+http_add_header('User-Agent', ua) .
+end_func .
+
+function : http_set_accept_json() return void .
+http_add_header('Accept', 'application/json') .
+end_func .
+
+function : http_set_accept_html() return void .
+http_add_header('Accept', 'text/html,application/xhtml+xml') .
+end_func .
+
+function : http_set_bearer_token(token = string) return void .
+http_add_header('Authorization', 'Bearer ' + token) .
+end_func .
+
+function : http_set_api_key(key = string) return void .
+http_add_header('X-API-Key', key) .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  URL PARSING & MANIPULATION
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : get_host(url = string) return string .
+variable : rest = string , p = integer .
+rest = url .
+p = index_of(rest, '://') .
+if p >= 0 then
+    rest = substring(rest, p + 3, length(rest) - p - 3) .
+end_if .
+p = index_of(rest, '/') .
+if p >= 0 then return substring(rest, 0, p) . end_if .
+p = index_of(rest, '?') .
+if p >= 0 then return substring(rest, 0, p) . end_if .
+p = index_of(rest, '#') .
+if p >= 0 then return substring(rest, 0, p) . end_if .
+return rest .
+end_func .
+
+function : get_scheme(url = string) return string .
+variable : p = integer .
+p = index_of(url, '://') .
+if p < 0 then return 'https' . end_if .
+return lower(substring(url, 0, p)) .
+end_func .
+
+function : get_path(url = string) return string .
+variable : rest = string , p = integer .
+rest = url .
+p = index_of(rest, '://') .
+if p >= 0 then
+    rest = substring(rest, p + 3, length(rest) - p - 3) .
+end_if .
+p = index_of(rest, '/') .
+if p < 0 then return '/' . end_if .
+rest = substring(rest, p, length(rest) - p) .
+p = index_of(rest, '?') .
+if p >= 0 then rest = substring(rest, 0, p) . end_if .
+p = index_of(rest, '#') .
+if p >= 0 then rest = substring(rest, 0, p) . end_if .
+return rest .
+end_func .
+
+function : get_query(url = string) return string .
+variable : p = integer , q = integer , rest = string .
+p = index_of(url, '?') .
+if p < 0 then return '' . end_if .
+rest = substring(url, p + 1, length(url) - p - 1) .
+q = index_of(rest, '#') .
+if q >= 0 then return substring(rest, 0, q) . end_if .
+return rest .
+end_func .
+
+function : get_fragment(url = string) return string .
+variable : p = integer .
+p = index_of(url, '#') .
+if p < 0 then return '' . end_if .
+return substring(url, p + 1, length(url) - p - 1) .
+end_func .
+
+function : remove_query(url = string) return string .
+variable : p = integer .
+p = index_of(url, '?') .
+if p < 0 then return url . end_if .
+return substring(url, 0, p) .
+end_func .
+
+function : remove_fragment(url = string) return string .
+variable : p = integer .
+p = index_of(url, '#') .
+if p < 0 then return url . end_if .
+return substring(url, 0, p) .
+end_func .
+
+function : clean_url(url = string) return string .
+return remove_fragment(remove_query(url)) .
+end_func .
+
+function : get_filename(url = string) return string .
+variable : u = string , p = integer .
+u = clean_url(url) .
+p = last_index_of_char(u, '/') .
+if p < 0 then return u . end_if .
+return substring(u, p + 1, length(u) - p - 1) .
+end_func .
+
+function : get_extension(url = string) return string .
+variable : fn = string , p = integer .
+fn = lower(get_filename(url)) .
+p = index_of(fn, '.') .
+if p < 0 then return '' . end_if .
+return substring(fn, p, length(fn) - p) .
+end_func .
+
+function : is_http_url(url = string) return boolean .
+variable : u = string .
+u = lower(trim(url)) .
+if starts_with(u, 'http://') then return true . end_if .
+if starts_with(u, 'https://') then return true . end_if .
+return false .
+end_func .
+
+function : is_https_url(url = string) return boolean .
+return starts_with(lower(trim(url)), 'https://') .
+end_func .
+
+function : is_web_url(url = string) return boolean .
+return is_http_url(url) .
+end_func .
+
+function : is_absolute_url(url = string) return boolean .
+if index_of(url, '://') >= 0 then return true . end_if .
+return false .
+end_func .
+
+function : is_relative_url(url = string) return boolean .
+if is_absolute_url(url) then return false . end_if .
+return true .
+end_func .
+
+function : url_has_query(url = string) return boolean .
+if index_of(url, '?') >= 0 then return true . end_if .
+return false .
+end_func .
+
+function : url_has_fragment(url = string) return boolean .
+if index_of(url, '#') >= 0 then return true . end_if .
+return false .
+end_func .
+
+function : url_is_secure(url = string) return boolean .
+return is_https_url(url) .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  HTML CONTENT DETECTION
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : is_html_text(content = string) return boolean .
+variable : c = string .
+c = lower(content) .
+if contains(c, '<html') then return true . end_if .
+if contains(c, '<!doctype html') then return true . end_if .
+return false .
+end_func .
+
+function : contains_html_tag(content = string) return boolean .
+if contains(content, '<') then
+    if contains(content, '>') then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : contains_html_link(content = string) return boolean .
+return contains(lower(content), '<a ') .
+end_func .
+
+function : contains_html_image(content = string) return boolean .
+return contains(lower(content), '<img') .
+end_func .
+
+function : contains_html_title(content = string) return boolean .
+return contains(lower(content), '<title') .
+end_func .
+
+function : contains_html_form(content = string) return boolean .
+return contains(lower(content), '<form') .
+end_func .
+
+function : contains_html_script(content = string) return boolean .
+return contains(lower(content), '<script') .
+end_func .
+
+function : contains_html_style(content = string) return boolean .
+return contains(lower(content), '<style') .
+end_func .
+
+function : contains_html_video(content = string) return boolean .
+return contains(lower(content), '<video') .
+end_func .
+
+function : contains_html_audio(content = string) return boolean .
+return contains(lower(content), '<audio') .
+end_func .
+
+function : contains_html_iframe(content = string) return boolean .
+return contains(lower(content), '<iframe') .
+end_func .
+
+function : extract_title(html = string) return string .
+variable : t = array_string[1] .
+t = extract_between(html, '<title>', '</title>') .
+if length(t) < 1 then return '' . end_if .
+return trim(t[0]) .
+end_func .
+
+function : extract_links(html = string) return array_string .
+return extract_between(html, 'href="', '"') .
+end_func .
+
+function : extract_images(html = string) return array_string .
+return extract_between(html, 'src="', '"') .
+end_func .
+
+function : extract_scripts(html = string) return array_string .
+return extract_between(html, '<script src="', '"') .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  JSON HELPERS
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : contains_json_object(content = string) return boolean .
+if contains(content, '{') then
+    if contains(content, '}') then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : contains_json_array(content = string) return boolean .
+if contains(content, '[') then
+    if contains(content, ']') then return true . end_if .
+end_if .
+return false .
+end_func .
+
+function : is_json_response(content = string) return boolean .
+return json_valid(content) .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  FILE MANAGEMENT
+  ═══════════════════════════════════════════════════════════════ }
+*/ 
+
+function : save_web_text(path = string, content = string) return boolean .
+write_file(path, content) .
+return file_exists(path) .
+end_func .
+
+function : load_web_text(path = string) return string .
+if not file_exists(path) then return '' . end_if .
+return read_file(path) .
+end_func .
+
+function : append_web_text(path = string, content = string) return boolean .
+append_file(path, content) .
+return file_exists(path) .
+end_func .
+
+function : delete_web_cache(path = string) return boolean .
+if not file_exists(path) then return false . end_if .
+delete_file(path) .
+if file_exists(path) then return false . end_if .
+return true .
+end_func .
+
+function : ensure_folder(path = string) return boolean .
+return force_dirs(path) .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  STRING UTILITIES
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : pad_left(s = string, pad_char = string, total_len = integer) return string .
+variable : result = string .
+if length(pad_char) == 0 then return s . end_if .
+result = s .
+while length(result) < total_len do
+    result = pad_char + result .
+end_while .
+return result .
+end_func .
+
+function : pad_right(s = string, pad_char = string, total_len = integer) return string .
+variable : result = string .
+if length(pad_char) == 0 then return s . end_if .
+result = s .
+while length(result) < total_len do
+    result = result + pad_char .
+end_while .
+return result .
+end_func .
+
+function : repeat_char(c = string, n = integer) return string .
+return repeat_str(c, n) .
+end_func .
+
+function : capitalize_first(s = string) return string .
+variable : first = string , rest = string .
+if length(s) == 0 then return s . end_if .
+first = upper(substring(s, 0, 1)) .
+if length(s) == 1 then return first . end_if .
+rest = substring(s, 1, length(s) - 1) .
+return first + rest .
+end_func .
+
+function : count_char(s = string, c = string) return integer .
+variable : i = integer , count = integer .
+count = 0 .
+i = 0 .
+while i < length(s) do
+    if char_at(s, i) == c then
+        count = count + 1 .
+    end_if .
+    i = i + 1 .
+end_while .
+return count .
+end_func .
+
+function : count_occurrences(s = string, sub = string) return integer .
+variable : count = integer , rest = string , p = integer .
+if length(sub) == 0 then return 0 . end_if .
+count = 0 .
+rest = s .
+while length(rest) > 0 do
+    p = index_of(rest, sub) .
+    if p < 0 then return count . end_if .
+    count = count + 1 .
+    rest = substring(rest, p + length(sub), length(rest) - p - length(sub)) .
+end_while .
+return count .
+end_func .
+
+function : is_empty(s = string) return boolean .
+if length(trim(s)) == 0 then return true . end_if .
+return false .
+end_func .
+
+function : is_blank(s = string) return boolean .
+if length(trim(s)) == 0 then return true . end_if .
+return false .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  VALIDATION
+  ═══════════════════════════════════════════════════════════════ }
+*/ 
+
+function : is_valid_email(email = string) return boolean .
+variable : e = string , at = integer , dot = integer .
+e = trim(email) .
+if length(e) == 0 then return false . end_if .
+if not contains(e, '@') then return false . end_if .
+if not contains(e, '.') then return false . end_if .
+at = index_of(e, '@') .
+dot = last_index_of_char(e, '.') .
+if at <= 0 then return false . end_if .
+if dot <= at + 1 then return false . end_if .
+if dot >= length(e) - 1 then return false . end_if .
+return true .
+end_func .
+
+function : is_valid_url(url = string) return boolean .
+return is_http_url(url) .
+end_func .
+
+function : is_valid_ipv4(ip = string) return boolean .
+variable : parts = string[10] , i = integer , n = integer .
+parts = split(ip, '.') .
+if length(parts) <> 4 then return false . end_if .
+i = 0 .
+while i < 4 do
+    if not is_all_digits(parts[i]) then return false . end_if .
+    n = str_to_int(parts[i]) .
+    if n < 0 then return false . end_if .
+    if n > 255 then return false . end_if .
+    i = i + 1 .
+end_while .
+return true .
+end_func .
+
+
+/* { ═══════════════════════════════════════════════════════════════
+  ESCAPE HELPERS
+  ═══════════════════════════════════════════════════════════════ }
+*/
+
+function : html_escape(s = string) return string .
+variable : r = string .
+r = s .
+r = replace(r, '&', '&amp;') .
+r = replace(r, '<', '&lt;') .
+r = replace(r, '>', '&gt;') .
+r = replace(r, '"', '&quot;') .
+return r .
+end_func .
+
+function : html_unescape(s = string) return string .
+variable : r = string .
+r = s .
+r = replace(r, '&amp;', '&') .
+r = replace(r, '&lt;', '<') .
+r = replace(r, '&gt;', '>') .
+r = replace(r, '&quot;', '"') .
+return r .
+end_func .
+
+function : json_escape(s = string) return string .
+variable : r = string .
+r = s .
+r = replace(r, '\', '\\') .
+r = replace(r, '"', '\"') .
+r = replace(r, newline(), '\n') .
+r = replace(r, tab(), '\t') .
+return r .
+end_func .
+
+
+end_lib .

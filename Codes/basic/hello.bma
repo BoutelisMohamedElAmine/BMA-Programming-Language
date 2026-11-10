@@ -1,0 +1,8 @@
+BMA_Pro : hello .
+variable : x = integer , name = string .
+code :
+    x = 42 .
+    name = 'BMA' .
+    writeline('Hello from BMA C!') .
+    writeline(x) .
+end .

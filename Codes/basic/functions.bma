@@ -1,0 +1,47 @@
+BMA_Pro : functions_test .
+
+variable :
+            result = integer ,
+            greeting = string .
+
+function : add(a = integer, b = integer) return integer .
+            return a + b .
+end_func .
+
+function : multiply(a = integer, b = integer) return integer .
+variable : res = integer .
+            res = a * b .
+            return res .
+end_func .
+
+function : make_greeting(name = string) return string .
+            return 'Hello, ' + name + '!' .
+end_func .
+
+function : factorial(n = integer) return integer .
+variable : f = integer , i = integer .
+            f = 1 .
+            for i = 1 to n do
+                        f = f * i .
+            end_for .
+            return f .
+end_func .
+
+code :
+            writeline('=== Testing User Functions ===') .
+
+            result = add(15, 25) .
+            writeline('add(15, 25) = ', result) .
+
+            result = multiply(6, 7) .
+            writeline('multiply(6, 7) = ', result) .
+
+            greeting = make_greeting('BMA') .
+            writeline('make_greeting("BMA") = ', greeting) .
+
+            result = factorial(5) .
+            writeline('factorial(5) = ', result) .
+
+            writeline('') .
+            writeline('All function tests passed!') .
+end .

@@ -1,0 +1,15 @@
+BMA_Pro : const_test .
+const :
+            PI = 3.14159 ,
+            MAX = 100 .
+variable :
+            r = real .
+code :
+            writeline('PI = ', PI) .
+            writeline('MAX = ', MAX) .
+            r = PI * 2.0 .
+            writeline('2*PI = ', r) .
+
+            // إذا حاولت تعديل ثابت، سيظهر خطأ
+            // PI = 5.0 . // سيعطي خطأ: Cannot assign to constant 'PI'
+end .

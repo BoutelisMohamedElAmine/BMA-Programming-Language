@@ -1,0 +1,7 @@
+bma_pro : tahya_el_djazayer .
+const : one = 1 , two = 2 , three = 3 .
+variable : my_message = string .
+code :
+my_message = 'viva l°algerie' .
+writeline(one,two,three,' ',my_message) .
+end .

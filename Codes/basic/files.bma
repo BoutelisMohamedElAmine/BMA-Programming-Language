@@ -1,0 +1,40 @@
+BMA_Pro : files_test .
+variable :
+            content = string ,
+            path = string .
+code :
+            writeline('=== File I/O Test ===') .
+
+            path = 'C:\BMA\test_file.txt' .
+
+            writeline('Writing to file...') .
+            write_file(path, 'Hello from BMA C!') .
+
+            if file_exists(path) then
+                        writeline('File created successfully.') .
+            else
+                        writeline('ERROR: File not created.') .
+            end_if .
+
+            writeline('Reading from file...') .
+            content = read_file(path) .
+            writeline('Content: ', content) .
+
+            writeline('Appending to file...') .
+            append_file(path, ' - Appended line.') .
+
+            content = read_file(path) .
+            writeline('New content: ', content) .
+
+            writeline('Deleting file...') .
+            delete_file(path) .
+
+            if not file_exists(path) then
+                        writeline('File deleted successfully.') .
+            else
+                        writeline('ERROR: File not deleted.') .
+            end_if .
+
+            writeline('') .
+            writeline('All file tests passed!') .
+end .

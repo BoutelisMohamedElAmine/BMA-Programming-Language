@@ -1,0 +1,40 @@
+BMA_Pro : arrays_test .
+variable :
+            arr = integer[5] ,
+            i = integer ,
+            total = integer ,
+            names = string[3] .
+code :
+            writeline('=== Test 1: Declare & Fill ===') .
+            for i = 0 to 4 do
+                        arr[i] = i * 10 .
+            end_for .
+
+            writeline('Array elements:') .
+            for i = 0 to 4 do
+                        writeline('  arr[', i, '] = ', arr[i]) .
+            end_for .
+
+            writeline('') .
+            writeline('=== Test 2: Sum ===') .
+            total = 0 .
+            for i = 0 to 4 do
+                        total = total + arr[i] .
+            end_for .
+            writeline('Sum = ', total) .
+
+            writeline('') .
+            writeline('=== Test 3: Array Literal ===') .
+            arr = [1, 2, 3, 4, 5] .
+            writeline('Literal arr: ', arr) .
+
+            writeline('') .
+            writeline('=== Test 4: String Array ===') .
+            names[0] = 'Alice' .
+            names[1] = 'Bob' .
+            names[2] = 'Charlie' .
+            writeline('names[1] = ', names[1]) .
+
+            writeline('') .
+            writeline('All array tests passed!') .
+end .

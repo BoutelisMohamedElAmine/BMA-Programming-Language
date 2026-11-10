@@ -1,0 +1,50 @@
+BMA_Pro : comprehensive .
+variable :
+    i = integer ,
+    total = integer ,
+    name = string ,
+    pi = real .
+code :
+    writeline('=== Test 1: Arithmetic ===') .
+    i = 10 + 20 * 2 .
+    writeline('10 + 20 * 2 = ', i) .
+    
+    writeline('') .
+    writeline('=== Test 2: If/Else ===') .
+    i = 15 .
+    if i > 10 then
+        writeline('i is greater than 10') .
+    else
+        writeline('i is 10 or less') .
+    end_if .
+    
+    writeline('') .
+    writeline('=== Test 3: While Loop ===') .
+    i = 1 .
+    while i <= 5 do
+        writeline('Count: ', i) .
+        i = i + 1 .
+    end_while .
+    
+    writeline('') .
+    writeline('=== Test 4: For Loop ===') .
+    total = 0 .
+    for i = 1 to 5 do
+        total = total + i .
+    end_for .
+    writeline('Sum 1..5 = ', total) .
+    
+    writeline('') .
+    writeline('=== Test 5: Strings ===') .
+    name = 'BMA' .
+    writeline('Language: ', name) .
+    writeline('Concatenation: ', 'Hello, ' + name) .
+    
+    writeline('') .
+    writeline('=== Test 6: Reals ===') .
+    pi = 3.14159 .
+    writeline('Pi = ', pi) .
+    
+    writeline('') .
+    writeline('All tests complete!') .
+end .

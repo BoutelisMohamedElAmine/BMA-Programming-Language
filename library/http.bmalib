@@ -1,0 +1,96 @@
+BMA_Lib : http .
+
+// ─── Natives ───
+native : http_get(url = string) return string .
+native : url_encode(s = string) return string .
+native : url_decode(s = string) return string .
+
+// ─── BMA Functions ───
+
+function : get_host(url = string) return string .
+variable : rest = string , p = integer , q = integer .
+            rest = url .
+            p = index_of(rest, '://') .
+            if p >= 0 then
+                        rest = substring(rest, p + 3, length(rest) - p - 3) .
+            end_if .
+            p = index_of(rest, '/') .
+            if p >= 0 then
+                        rest = substring(rest, 0, p) .
+            end_if .
+            q = index_of(rest, '?') .
+            if q >= 0 then
+                        rest = substring(rest, 0, q) .
+            end_if .
+            return rest .
+end_func .
+
+function : get_path(url = string) return string .
+variable : rest = string , p = integer , q = integer .
+            rest = url .
+            p = index_of(rest, '://') .
+            if p >= 0 then
+                        rest = substring(rest, p + 3, length(rest) - p - 3) .
+            end_if .
+            p = index_of(rest, '/') .
+            if p < 0 then return '/' . end_if .
+            rest = substring(rest, p, length(rest) - p) .
+            q = index_of(rest, '?') .
+            if q >= 0 then
+                        rest = substring(rest, 0, q) .
+            end_if .
+            return rest .
+end_func .
+
+function : get_query(url = string) return string .
+variable : p = integer , q = integer , rest = string .
+            p = index_of(url, '?') .
+            if p < 0 then return '' . end_if .
+            rest = substring(url, p + 1, length(url) - p - 1) .
+            q = index_of(rest, '#') .
+            if q >= 0 then
+                        return substring(rest, 0, q) .
+            end_if .
+            return rest .
+end_func .
+
+function : get_scheme(url = string) return string .
+variable : p = integer .
+            p = index_of(url, '://') .
+            if p < 0 then return 'http' . end_if .
+            return lower(substring(url, 0, p)) .
+end_func .
+
+function : is_https(url = string) return boolean .
+            return starts_with(lower(url), 'https://') .
+end_func .
+
+function : is_http(url = string) return boolean .
+            if is_https(url) then return true . end_if .
+            return starts_with(lower(url), 'http://') .
+end_func .
+
+function : url_build(scheme = string, host = string, path = string) return string .
+variable : result = string .
+            result = scheme + '://' + host .
+            if not starts_with(path, '/') then
+                        result = result + '/' .
+            end_if .
+            return result + path .
+end_func .
+
+function : url_with_query(base = string, key = string, value = string) return string .
+variable : sep = string .
+            if index_of(base, '?') < 0 then
+                        sep = '?' .
+            else
+                        sep = '&' .
+            end_if .
+            return base + sep + url_encode(key) + '=' + url_encode(value) .
+end_func .
+
+function : is_ok(body = string) return boolean .
+            return length(body) > 0 .
+end_func .
+
+end_lib .

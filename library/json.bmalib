@@ -1,0 +1,57 @@
+BMA_Lib : json .
+
+// ─── Natives ───
+native : json_valid(s = string) return boolean .
+native : json_has(s = string, path = string) return boolean .
+native : json_get(s = string, path = string) return string .
+native : json_get_int(s = string, path = string) return integer .
+native : json_get_real(s = string, path = string) return real .
+native : json_get_bool(s = string, path = string) return boolean .
+
+// ─── BMA Functions ───
+
+function : is_valid(s = string) return boolean .
+            return json_valid(s) .
+end_func .
+
+function : has(s = string, path = string) return boolean .
+            return json_has(s, path) .
+end_func .
+
+function : get_str(s = string, path = string) return string .
+            if not json_has(s, path) then return '' . end_if .
+            return json_get(s, path) .
+end_func .
+
+function : get_num(s = string, path = string) return real .
+            if not json_has(s, path) then return 0.0 . end_if .
+            return json_get_real(s, path) .
+end_func .
+
+function : get_bool(s = string, path = string) return boolean .
+            if not json_has(s, path) then return false . end_if .
+            return json_get_bool(s, path) .
+end_func .
+
+function : is_object(s = string) return boolean .
+            if not is_valid(s) then return false . end_if .
+            if length(s) == 0 then return false . end_if .
+            if char_at(s, 0) <> '{' then return false . end_if .
+            return true .
+end_func .
+
+function : is_array(s = string) return boolean .
+            if not is_valid(s) then return false . end_if .
+            if length(s) == 0 then return false . end_if .
+            if char_at(s, 0) <> '[' then return false . end_if .
+            return true .
+end_func .
+
+function : pretty_get(s = string, path = string) return string .
+variable : result = string .
+            if not json_has(s, path) then return '<missing>' . end_if .
+            result = json_get(s, path) .
+            return result .
+end_func .
+
+end_lib .

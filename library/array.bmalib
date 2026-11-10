@@ -1,0 +1,88 @@
+BMA_Lib : array .
+
+native : length(s = string) return integer .
+
+// ─── ملاحظة: `length` تعمل مع المصفوفات أيضاً (الـ native يفحص النوع) ───
+
+function : sum_int(arr = integer[100], n = integer) return integer .
+variable : i = integer , total = integer .
+            total = 0 .
+            i = 0 .
+            while i < n do
+                        total = total + arr[i] .
+                        i = i + 1 .
+            end_while .
+            return total .
+end_func .
+
+function : sum_real(arr = real[100], n = integer) return real .
+variable : i = integer , total = real .
+            total = 0.0 .
+            i = 0 .
+            while i < n do
+                        total = total + arr[i] .
+                        i = i + 1 .
+            end_while .
+            return total .
+end_func .
+
+function : min_int(arr = integer[100], n = integer) return integer .
+variable : i = integer , m = integer .
+            if n <= 0 then return 0 . end_if .
+            m = arr[0] .
+            i = 1 .
+            while i < n do
+                        if arr[i] < m then m = arr[i] . end_if .
+                        i = i + 1 .
+            end_while .
+            return m .
+end_func .
+
+function : max_int(arr = integer[100], n = integer) return integer .
+variable : i = integer , m = integer .
+            if n <= 0 then return 0 . end_if .
+            m = arr[0] .
+            i = 1 .
+            while i < n do
+                        if arr[i] > m then m = arr[i] . end_if .
+                        i = i + 1 .
+            end_while .
+            return m .
+end_func .
+
+function : average_int(arr = integer[100], n = integer) return real .
+variable : total = integer .
+            if n <= 0 then return 0.0 . end_if .
+            total = sum_int(arr, n) .
+            return total / n .
+end_func .
+
+function : find_int(arr = integer[100], n = integer, value = integer) return integer .
+variable : i = integer .
+            i = 0 .
+            while i < n do
+                        if arr[i] == value then return i . end_if .
+                        i = i + 1 .
+            end_while .
+            return -1 .
+end_func .
+
+function : contains_int(arr = integer[100], n = integer, value = integer) return boolean .
+            return find_int(arr, n, value) >= 0 .
+end_func .
+
+function : reverse_int(arr = integer[100], n = integer) return void .
+variable : i = integer , j = integer , t = integer .
+            i = 0 .
+            j = n - 1 .
+            while i < j do
+                        t = arr[i] .
+                        arr[i] = arr[j] .
+                        arr[j] = t .
+                        i = i + 1 .
+                        j = j - 1 .
+            end_while .
+            return .
+end_func .
+
+end_lib .

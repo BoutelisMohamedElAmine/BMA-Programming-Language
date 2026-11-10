@@ -1,151 +1,136 @@
 BMA_Lib : strings .
 
-native : upper ( s=string ) return string .
-native : lower ( s=string ) return string .
-native : trim ( s=string ) return string .
-native : length ( s=string ) return integer .
-native : contains ( s=string , sub=string ) return boolean .
-native : substring ( s=string , start=integer , len=integer ) return string .
-native : index_of ( s=string , sub=string ) return integer .
-native : starts_with ( s=string , prefix=string ) return boolean .
-native : ends_with ( s=string , suffix=string ) return boolean .
-native : replace ( s=string , old=string , new=string ) return string .
-native : char_at ( s=string , index=integer ) return string .
-native : repeat_str ( s=string , count=integer ) return string .
-native : reverse ( s=string ) return string .
-native : newline () return string .
-native : tab () return string .
-native : split ( s=string , sep=string ) return string .
-native : join ( arr=string , sep=string ) return string .
+// ─── Natives ───
+native : length(s = string) return integer .
+native : upper(s = string) return string .
+native : lower(s = string) return string .
+native : trim(s = string) return string .
+native : substring(s = string, start = integer, count = integer) return string .
+native : contains(s = string, sub = string) return boolean .
+native : index_of(s = string, sub = string) return integer .
+native : starts_with(s = string, prefix = string) return boolean .
+native : ends_with(s = string, suffix = string) return boolean .
+native : replace(s = string, old = string, new = string) return string .
+native : char_at(s = string, index = integer) return string .
+native : repeat_str(s = string, n = integer) return string .
+native : reverse(s = string) return string .
 
-function : is_empty ( s=string ) return boolean .
-            return length(s) == 0 .
+// ─── BMA Functions ───
+
+function : is_empty(s = string) return boolean .
+            return length(trim(s)) == 0 .
 end_func .
 
-function : equals_ignore_case ( a=string , b=string ) return boolean .
-            return lower(a) == lower(b) .
+function : capitalize(s = string) return string .
+variable : first = string , rest = string .
+            if length(s) == 0 then return s . end_if .
+            first = upper(substring(s, 0, 1)) .
+            if length(s) == 1 then return first . end_if .
+            rest = substring(s, 1, length(s) - 1) .
+            return first + rest .
 end_func .
 
-function : count_char ( s=string , c=string ) return integer .
-            variable : i=integer , n=integer , total=integer .
-            n = length(s) .
-            total = 0 .
-            for i = 0 to n - 1 do
+function : count_char(s = string, c = string) return integer .
+variable : i = integer , count = integer .
+            count = 0 .
+            i = 0 .
+            while i < length(s) do
                         if char_at(s, i) == c then
-                                    total = total + 1 .
+                                    count = count + 1 .
                         end_if .
-            end_for .
-            return total .
+                        i = i + 1 .
+            end_while .
+            return count .
 end_func .
 
-function : is_palindrome ( s=string ) return boolean .
-            variable : i=integer , j=integer .
-            j = length(s) - 1 .
-            for i = 0 to j do
-                        if i >= j then
-                                    break .
+function : count_occurrences(s = string, sub = string) return integer .
+variable : count = integer , rest = string , pos = integer .
+            if length(sub) == 0 then return 0 . end_if .
+            count = 0 .
+            rest = s .
+            while length(rest) > 0 do
+                        pos = index_of(rest, sub) .
+                        if pos < 0 then return count . end_if .
+                        count = count + 1 .
+                        rest = substring(rest, pos + length(sub), length(rest) - pos - length(sub)) .
+            end_while .
+            return count .
+end_func .
+
+function : pad_left(s = string, pad = string, total = integer) return string .
+variable : result = string .
+            if length(pad) == 0 then return s . end_if .
+            result = s .
+            while length(result) < total do
+                        result = pad + result .
+            end_while .
+            return result .
+end_func .
+
+function : pad_right(s = string, pad = string, total = integer) return string .
+variable : result = string .
+            if length(pad) == 0 then return s . end_if .
+            result = s .
+            while length(result) < total do
+                        result = result + pad .
+            end_while .
+            return result .
+end_func .
+
+function : repeat(s = string, n = integer) return string .
+            return repeat_str(s, n) .
+end_func .
+
+function : join_with_sep(a = string, b = string, sep = string) return string .
+            if length(a) == 0 then return b . end_if .
+            if length(b) == 0 then return a . end_if .
+            return a + sep + b .
+end_func .
+
+function : is_numeric(s = string) return boolean .
+variable : i = integer , c = string , dot_count = integer .
+            if length(s) == 0 then return false . end_if .
+            dot_count = 0 .
+            i = 0 .
+            while i < length(s) do
+                        c = char_at(s, i) .
+                        if c == '-' then
+                                    if i <> 0 then return false . end_if .
+                        else
+                                    if c == '.' then
+                                                dot_count = dot_count + 1 .
+                                                if dot_count > 1 then return false . end_if .
+                                    else
+                                                if c < '0' then return false . end_if .
+                                                if c > '9' then return false . end_if .
+                                    end_if .
                         end_if .
-                        if char_at(s, i) <> char_at(s, j) then
-                                    return false .
-                        end_if .
-                        j = j - 1 .
-            end_for .
+                        i = i + 1 .
+            end_while .
             return true .
 end_func .
 
-//---------------int to str --------------------
-
-function : int_to_str(n = integer) return string .
-variable : digits = string , result = string , val = integer , dg = integer .
-digits = '0123456789' .
-result = '' .
-val = n .
-if val < 0 then
-    return '-' + int_to_str(0 - val) .
-end_if .
-if val == 0 then
-    return '0' .
-end_if .
-while val > 0 do
-    dg = val mod 10 .
-    result = substring(digits, dg, 1) + result .
-    val = val div 10 .
-end_while .
-return result .
-end_func .
-
-//------------------------------------------------------------
-
-
-function : inttostr ( n=integer ) return string .
-            variable : result=string , digit=integer , negative=boolean .
-            result = '' .
-            negative = false .
-            if n < 0 then
-                        negative = true .
-                        n = -n .
-            end_if .
-            if n == 0 then
-                        return '0' .
-            end_if .
-            while n > 0 do
-                        digit = n mod 10 .
-                        result = char_at('0123456789', digit) + result .
-                        n = n div 10 .
-            end_while .
-            if negative then
-                        result = '-' + result .
-            end_if .
-            return result .
-end_func .
-
-function : to_string ( n=integer ) return string .
-            variable : result=string , digit=integer , negative=boolean .
-            result = '' .
-            negative = false .
-            if n < 0 then
-                        negative = true .
-                        n = -n .
-            end_if .
-            if n == 0 then
-                        return '0' .
-            end_if .
-            while n > 0 do
-                        digit = n mod 10 .
-                        result = char_at('0123456789', digit) + result .
-                        n = n div 10 .
-            end_while .
-            if negative then
-                        result = '-' + result .
-            end_if .
-            return result .
-end_func .
-
-function : to_int ( s=string ) return integer .
-            variable : i=integer , n=integer , result=integer , negative=boolean , digit=integer .
-            n = length(s) .
+function : to_int(s = string) return integer .
+variable : i = integer , c = string , result = integer , sign = integer , started = boolean .
             result = 0 .
-            negative = false .
+            sign = 1 .
+            started = false .
             i = 0 .
-            if n == 0 then
-                        return 0 .
-            end_if .
-            if char_at(s, 0) == '-' then
-                        negative = true .
-                        i = 1 .
-            end_if .
-            while i < n do
-                        digit = index_of('0123456789', char_at(s, i)) .
-                        if digit < 0 then
-                                    return 0 .
+            while i < length(s) do
+                        c = char_at(s, i) .
+                        if c == '-' then
+                                    if i == 0 then sign = -1 . end_if .
+                        else
+                                    if c >= '0' then
+                                                if c <= '9' then
+                                                            result = result * 10 + ((c - '0')) .
+                                                            started = true .
+                                                end_if .
+                                    end_if .
                         end_if .
-                        result = result * 10 + digit .
                         i = i + 1 .
             end_while .
-            if negative then
-                        result = -result .
-            end_if .
-            return result .
+            return result * sign .
 end_func .
 
 end_lib .

@@ -1,0 +1,130 @@
+// ═══════════════════════════════════════════════════════════════
+// Currency Converter — BMA Sample Application
+// Author: Boutelis Mohamed El Amine
+// Company: BMA SOFTWARE ALGERIA
+// ═══════════════════════════════════════════════════════════════
+
+BMA_Pro : currency_converter .
+library : math , strings , json , http .
+
+variable :
+            from_c = string ,
+            to_c = string ,
+            amount = real ,
+            rate = real ,
+            converted = real ,
+            json_resp = string ,
+            url = string ,
+            history_file = string ,
+            count_before = integer ,
+            content = string .
+
+function : fetch_rate(from_c = string, to_c = string) return real .
+variable : url = string , json_resp = string .
+            // open.er-api.com يدعم DZD وجميع العملات العالمية
+            url = 'https://open.er-api.com/v6/latest/' + upper(from_c) .
+            json_resp = http_get(url) .
+
+            // تحقق أن الرد JSON صالح
+            if not json_valid(json_resp) then
+                        writeline('  [Debug] Invalid JSON response from API.') .
+                        return 0.0 .
+            end_if .
+
+            // تحقق أن النتيجة "success"
+            if not json_has(json_resp, 'result') then
+                        writeline('  [Debug] API response does not contain "result" field.') .
+                        return 0.0 .
+            end_if .
+
+            // تحقق أن العملة المطلوبة موجودة في rates
+            if not json_has(json_resp, 'rates.' + upper(to_c)) then
+                        writeline('  [Debug] Currency "', upper(to_c), '" not found in API response.') .
+                        writeline('  [Debug] Available currencies sample:') .
+                        writeline('          Try: USD, EUR, GBP, DZD, JPY, CAD, AUD, CHF, CNY, TRY') .
+                        return 0.0 .
+            end_if .
+
+            return json_get_real(json_resp, 'rates.' + upper(to_c)) .
+end_func .
+
+function : count_lines(text = string) return integer .
+variable : count = integer , rest = string , pos = integer .
+            if length(text) == 0 then return 0 . end_if .
+            count = 1 .
+            rest = text .
+            while contains(rest, newline()) do
+                        pos = index_of(rest, newline()) .
+                        rest = substring(rest, pos + length(newline()), length(rest) - pos - length(newline())) .
+                        count = count + 1 .
+            end_while .
+            return count .
+end_func .
+
+code :
+            history_file = 'currency_history.txt' .
+
+            writeline('===============================================') .
+            writeline('    BMA Currency Converter') .
+            writeline('    by Boutelis Mohamed El Amine') .
+            writeline('    BMA SOFTWARE ALGERIA') .
+            writeline('===============================================') .
+            writeline('') .
+            writeline('Supported: USD, EUR, GBP, DZD, JPY, CAD, AUD, CHF,') .
+            writeline('           CNY, TRY, SAR, AED, EGP, MAD, TND, KWD') .
+            writeline('') .
+
+            write('From currency (e.g., USD): ') .
+            readLine(from_c) .
+            from_c = upper(trim(from_c)) .
+
+            write('To currency   (e.g., DZD): ') .
+            readLine(to_c) .
+            to_c = upper(trim(to_c)) .
+
+            write('Amount: ') .
+            readLine(amount) .
+
+            writeline('') .
+            writeline('Fetching exchange rate from open.er-api.com...') .
+
+            rate = fetch_rate(from_c, to_c) .
+
+            if rate == 0.0 then
+                        writeline('') .
+                        writeline('===============================================') .
+                        writeline('  ERROR: Could not fetch exchange rate.') .
+                        writeline('===============================================') .
+                        writeline('Possible reasons:') .
+                        writeline('  1. Invalid currency code (check spelling)') .
+                        writeline('  2. No internet connection') .
+                        writeline('  3. API temporarily unavailable') .
+                        writeline('') .
+                        writeline('Tip: try standard codes like USD, EUR, DZD, GBP') .
+            else
+                        converted = amount * rate .
+
+                        writeline('') .
+                        writeline('===============================================') .
+                        writeline('    CONVERSION RESULT') .
+                        writeline('===============================================') .
+                        writeline('  From:       ', amount, ' ', from_c) .
+                        writeline('  Rate:       1 ', from_c, ' = ', rate, ' ', to_c) .
+                        writeline('  Converted:  ', converted, ' ', to_c) .
+                        writeline('===============================================') .
+
+                        append_file(history_file,
+                                    from_c + ' -> ' + to_c + ' | Amount: ' + amount +
+                                    ' | Result: ' + converted + newline()) .
+
+                        if file_exists(history_file) then
+                                    content = read_file(history_file) .
+                                    count_before = count_lines(content) .
+                                    writeline('') .
+                                    writeline('This conversion saved. Total in history: ', count_before) .
+                        end_if .
+            end_if .
+
+            writeline('') .
+            writeline('Thank you for using BMA!') .
+end .

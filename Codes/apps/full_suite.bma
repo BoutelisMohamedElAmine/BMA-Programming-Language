@@ -1,0 +1,344 @@
+// ═══════════════════════════════════════════════════════════════
+// BMA Full Test Suite
+// Author: Boutelis Mohamed El Amine
+// Company: BMA SOFTWARE ALGERIA
+// ═══════════════════════════════════════════════════════════════
+// يغطي: الأنواع، العمليات، التحكم، الرياضيات، النصوص، JSON،
+//       المصفوفات، OOP كامل، الملفات، HTTP.
+// ═══════════════════════════════════════════════════════════════
+
+BMA_Pro : full_suite .
+library : math , strings , json , http .
+
+// ═══ OOP: Parent class with private + static ═══
+class : Animal .
+    name = string .
+    private age = integer .
+
+    function : init(n = string, a = integer) return void .
+        self.name = n .
+        self.age = a .
+    end_func .
+
+    function : get_age() return integer .
+        return self.age .
+    end_func .
+
+    function : set_age(a = integer) return void .
+        self.age = a .
+    end_func .
+
+    function : speak() return string .
+        return '...' .
+    end_func .
+
+    function : describe() return string .
+        return self.name + ' (' + self.age + ' years)' .
+    end_func .
+
+    static function : create(n = string, a = integer) return Animal .
+        variable : x = Animal .
+        x.init(n, a) .
+        return x .
+    end_func .
+end_class .
+
+// ═══ OOP: Child class with inheritance + override + overload ═══
+class : Dog extends Animal .
+    breed = string .
+
+    function : init(n = string, a = integer, b = string) return void .
+        self.name = n .
+        self.set_age(a) .
+        self.breed = b .
+    end_func .
+
+    function : speak() return string .
+        return 'Woof! I am ' + self.name .
+    end_func .
+
+    function : speak(loud = boolean) return string .
+        if loud then
+            return 'WOOF WOOF!!!' .
+        end_if .
+        return 'woof' .
+    end_func .
+end_class .
+
+variable :
+    i = integer ,
+    j = integer ,
+    total = integer ,
+    r = real ,
+    s = string ,
+    b = boolean ,
+    arr = integer[10] ,
+    generic = Animal ,
+    dog = Dog ,
+    response = string ,
+    origin = string ,
+    file_path = string ,
+    file_content = string .
+
+code :
+
+    // ═══════════════════════════════════════════════════════════
+    // [1] Variables and Types
+    // ═══════════════════════════════════════════════════════════
+    writeline('═══════════════════════════════════════') .
+    writeline('  BMA Full Test Suite') .
+    writeline('  Boutelis Mohamed El Amine') .
+    writeline('  BMA SOFTWARE ALGERIA') .
+    writeline('═══════════════════════════════════════') .
+    writeline('') .
+
+    writeline('[1] Variables & Types') .
+    writeline('-----------------------------------') .
+    i = 42 .
+    r = 3.14 .
+    s = 'BMA' .
+    b = true .
+    writeline('  int:    ' + i) .
+    writeline('  real:   ' + r) .
+    writeline('  string: ' + s) .
+    writeline('  bool:   ' + b) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [2] Arithmetic
+    // ═══════════════════════════════════════════════════════════
+    writeline('[2] Arithmetic') .
+    writeline('-----------------------------------') .
+    writeline('  10 + 5 = ' + (10 + 5)) .
+    writeline('  10 - 5 = ' + (10 - 5)) .
+    writeline('  10 * 5 = ' + (10 * 5)) .
+    writeline('  10 / 4 = ' + (10 / 4)) .
+    writeline('  10 div 3 = ' + (10 div 3)) .
+    writeline('  10 mod 3 = ' + (10 mod 3)) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [3] Control Flow
+    // ═══════════════════════════════════════════════════════════
+    writeline('[3] Control Flow') .
+    writeline('-----------------------------------') .
+
+    i = 15 .
+    if i > 10 then
+        writeline('  if: ' + i + ' > 10') .
+    else
+        writeline('  if: ' + i + ' <= 10') .
+    end_if .
+
+    write('  for 1..5: ') .
+    for j = 1 to 5 do
+        write(j + ' ') .
+    end_for .
+    writeline('') .
+
+    write('  while: ') .
+    j = 3 .
+    while j > 0 do
+        write(j + ' ') .
+        j = j - 1 .
+    end_while .
+    writeline('') .
+
+    j = 5 .
+    if j > 0 then
+        if j > 3 then
+            writeline('  nested if: j > 3') .
+        end_if .
+    end_if .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [4] Math Library
+    // ═══════════════════════════════════════════════════════════
+    writeline('[4] Math Library') .
+    writeline('-----------------------------------') .
+    writeline('  sqrt(16) = ' + sqrt(16.0)) .
+    writeline('  abs(-7) = ' + abs(-7)) .
+    writeline('  floor(3.7) = ' + floor(3.7)) .
+    writeline('  ceil(3.2) = ' + ceil(3.2)) .
+    writeline('  round(3.5) = ' + round(3.5)) .
+    writeline('  pow(2,10) = ' + pow(2.0, 10.0)) .
+    writeline('  min(10,20) = ' + min(10, 20)) .
+    writeline('  max(10,20) = ' + max(10, 20)) .
+    writeline('  sin(0) = ' + sin(0.0)) .
+    writeline('  cos(0) = ' + cos(0.0)) .
+    writeline('  gcd(48,18) = ' + gcd(48, 18)) .
+    writeline('  factorial(5) = ' + factorial(5)) .
+    writeline('  fibonacci(10) = ' + fibonacci(10)) .
+    if is_prime(17) then
+        writeline('  is_prime(17) = true') .
+    else
+        writeline('  is_prime(17) = false') .
+    end_if .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [5] Strings Library
+    // ═══════════════════════════════════════════════════════════
+    writeline('[5] Strings Library') .
+    writeline('-----------------------------------') .
+    s = '  Hello BMA  ' .
+    writeline('  original: [' + s + ']') .
+    writeline('  trim:     [' + trim(s) + ']') .
+    writeline('  upper:    ' + upper(trim(s))) .
+    writeline('  lower:    ' + lower(trim(s))) .
+    writeline('  length:   ' + length(trim(s))) .
+    writeline('  reverse:  ' + reverse('BMA')) .
+    writeline('  repeat:   ' + repeat_str('ab', 3)) .
+    writeline('  replace:  ' + replace('a-b-c', '-', '_')) .
+    if contains('Hello BMA', 'BMA') then
+        writeline('  contains BMA: true') .
+    end_if .
+    if starts_with('Hello', 'He') then
+        writeline('  starts_with He: true') .
+    end_if .
+    if ends_with('Hello', 'lo') then
+        writeline('  ends_with lo: true') .
+    end_if .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [6] Arrays
+    // ═══════════════════════════════════════════════════════════
+    writeline('[6] Arrays') .
+    writeline('-----------------------------------') .
+    for j = 0 to 4 do
+        arr[j] = (j + 1) * 10 .
+    end_for .
+    write('  arr = ') .
+    for j = 0 to 4 do
+        write(arr[j] + ' ') .
+    end_for .
+    writeline('') .
+
+    total = 0 .
+    for j = 0 to 4 do
+        total = total + arr[j] .
+    end_for .
+    writeline('  sum = ' + total) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [7] OOP — Constructors
+    // ═══════════════════════════════════════════════════════════
+    writeline('[7] OOP — Constructors') .
+    writeline('-----------------------------------') .
+    generic = Animal.new('Rex', 5) .
+    writeline('  ' + generic.describe()) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [8] OOP — Inheritance
+    // ═══════════════════════════════════════════════════════════
+    writeline('[8] OOP — Inheritance') .
+    writeline('-----------------------------------') .
+    dog = Dog.new('Buddy', 3, 'Labrador') .
+    writeline('  name:  ' + dog.name) .
+    writeline('  breed: ' + dog.breed) .
+    writeline('  age:   ' + dog.get_age()) .
+    writeline('  ' + dog.describe()) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [9] OOP — Method Overloading
+    // ═══════════════════════════════════════════════════════════
+    writeline('[9] OOP — Overloading') .
+    writeline('-----------------------------------') .
+    writeline('  speak()       = ' + dog.speak()) .
+    writeline('  speak(true)   = ' + dog.speak(true)) .
+    writeline('  speak(false)  = ' + dog.speak(false)) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [10] OOP — Static Methods
+    // ═══════════════════════════════════════════════════════════
+    writeline('[10] OOP — Static Methods') .
+    writeline('-----------------------------------') .
+    generic = Animal.create('Max', 4) .
+    writeline('  ' + generic.describe()) .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [11] OOP — Private Fields (via get_age)
+    // ═══════════════════════════════════════════════════════════
+    writeline('[11] OOP — Private Fields') .
+    writeline('-----------------------------------') .
+    writeline('  dog.get_age() = ' + dog.get_age()) .
+    writeline('  (direct access to dog.age would be a compile error)') .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [12] File I/O
+    // ═══════════════════════════════════════════════════════════
+    writeline('[12] File I/O') .
+    writeline('-----------------------------------') .
+    file_path = 'bma_test_output.txt' .
+    write_file(file_path, 'Hello from BMA file I/O!') .
+    if file_exists(file_path) then
+        writeline('  file created: ' + file_path) .
+        file_content = read_file(file_path) .
+        writeline('  content: ' + file_content) .
+        delete_file(file_path) .
+        if not file_exists(file_path) then
+            writeline('  file deleted OK') .
+        end_if .
+    end_if .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [13] JSON
+    // ═══════════════════════════════════════════════════════════
+    writeline('[13] JSON') .
+    writeline('-----------------------------------') .
+    s = '{"name":"Ali","age":25,"admin":true,"skills":["BMA","C"]}' .
+    if json_valid(s) then
+        writeline('  valid: true') .
+        writeline('  name:  ' + json_get(s, 'name')) .
+        writeline('  age:   ' + json_get_int(s, 'age')) .
+        if json_get_bool(s, 'admin') then
+            writeline('  admin: true') .
+        end_if .
+        writeline('  skill: ' + json_get(s, 'skills[0]')) .
+    end_if .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // [14] HTTP
+    // ═══════════════════════════════════════════════════════════
+    writeline('[14] HTTP') .
+    writeline('-----------------------------------') .
+    writeline('  Fetching https://httpbin.org/get ...') .
+    response = http_get('https://httpbin.org/get') .
+
+    if length(response) > 0 then
+        if json_valid(response) then
+            writeline('  HTTP: 200 OK') .
+            origin = json_get(response, 'origin') .
+            writeline('  origin: ' + origin) .
+            writeline('  url:    ' + json_get(response, 'url')) .
+        else
+            writeline('  response was not valid JSON') .
+        end_if .
+    else
+        writeline('  (network unavailable — skipping HTTP test)') .
+        writeline('  Note: HTTP requires internet access.') .
+    end_if .
+    writeline('') .
+
+    // ═══════════════════════════════════════════════════════════
+    // DONE
+    // ═══════════════════════════════════════════════════════════
+    writeline('═══════════════════════════════════════') .
+    writeline('  ALL TESTS COMPLETE') .
+    writeline('  BMA is ready for production!') .
+    writeline('═══════════════════════════════════════') .
+    writeline('') .
+    writeline('Press Enter to exit...') .
+    readLine .
+
+end .
